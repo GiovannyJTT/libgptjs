@@ -1,6 +1,6 @@
 # libgptjs
 
-This project is being imported as submodule in several other repositories
+_`This project is being imported as submodule in several other repositories`_
 
 Graphical Programming with ThreeJS
 
