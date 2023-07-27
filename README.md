@@ -1,6 +1,6 @@
 # libgptjs
 
-_`This project is being imported as submodule in several other repositories`_
+_`This project is being imported as submodule in several other repositories. The hierarchy works as a NodeJS module.`_
 
 Graphical Programming with ThreeJS
 
