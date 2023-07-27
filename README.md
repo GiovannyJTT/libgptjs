@@ -1,4 +1,7 @@
 # libgptjs
+
+This project is being imported as submodule in several other repositories
+
 Graphical Programming with ThreeJS
 
 * Main classes for graphics pipeline
