@@ -50,21 +50,24 @@ PF_Scene.prototype.createFloor = function () {
     const floor_tex = new THREE.TextureLoader().load(PF_Common.FLOOR_TEXTURE_PATH);
     floor_tex.wrapS = THREE.RepeatWrapping;
     floor_tex.wrapT = THREE.RepeatWrapping;
-    floor_tex.repeat.set(2, 2);
+    floor_tex.repeat.set(1, 1);
+
+    const floor_nm = new THREE.TextureLoader().load(PF_Common.FLOOR_NORMAL_MAP_PATH);
 
     const floor_mat = new THREE.MeshPhongMaterial({
-        color: 0xb35900,
-        emissive: 0x101010,
-        flatShading: false,
-        specular: 0x111A11,
-        shininess: 50,
+        color: 0xffffff,
+        emissive: 0x0f0f0f,
+        flatShading: false, // smooth transition between triangles
+        specular: 0xe6d35e,
+        shininess: 75,
         map: floor_tex,
-        side: THREE.FrontSide
+        side: THREE.FrontSide,
+        normalMap: floor_nm,
     });
 
     // Mesh = Geometry + Material
     const floor = new THREE.Mesh(floor_geom, floor_mat);
-    floor.rotation.set(- 1.57079632679, 0, 0);
+    floor.rotation.set(-1.57079632679, 0, 0);
 
     // shadows
     floor.castShadow = false;
@@ -105,6 +108,7 @@ PF_Scene.prototype.createLights = function () {
     const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 1.0);
     this.gpt_lights.set("lAmbient", lAmbient);
 
+    /*
     // 75% white light. Point-Light: emits in all directions
     const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 1.0);
     lPoint.position.set(0, 100, 50);
@@ -112,12 +116,13 @@ PF_Scene.prototype.createLights = function () {
 
     const lPointHelper = new THREE.PointLightHelper(lPoint, 10);
     this.gpt_lights.set("lPointHelper", lPointHelper);
-
+    */
+   
     // 75% white light. Directional-Light: emits only in the configured direction vector
     const lDirectional = new THREE.DirectionalLight(new THREE.Color(0xbfbfbf), 1.0);
 
     // direction of the lighting vector
-    lDirectional.position.set(-200, 200, 0);
+    lDirectional.position.set(75, 200, 200);
     this.gpt_lights.set("lDirectional", lDirectional);
 
     const lDirectionalHelper = new THREE.DirectionalLightHelper(lDirectional, 10);

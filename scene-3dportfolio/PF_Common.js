@@ -13,6 +13,7 @@ const FLOOR_WIDTH = 1000;
  */
 const SKYBOX_WIDTH = 5 * FLOOR_WIDTH;
 const FLOOR_TEXTURE_PATH = "./assets/images/europe-map-1800x1800.jpg";
+const FLOOR_NORMAL_MAP_PATH = "./assets/images/europe-map-1800x1800-normal-map.jpg";
 
 const SKYBOX_TEXTURE_PATH = "./assets/images/Forest/";
 const SKYBOX_TEXTURE_IMAGES_NAMES = [
@@ -38,6 +39,7 @@ export default {
     FLOOR_WIDTH,
     SKYBOX_WIDTH,
     FLOOR_TEXTURE_PATH,
+    FLOOR_NORMAL_MAP_PATH,
     SKYBOX_TEXTURE_PATH,
     SKYBOX_TEXTURE_IMAGE_PATHS,
     CANVAS_CONTAINER_NAME_FOR_THREEJS,
