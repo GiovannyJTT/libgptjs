@@ -35,7 +35,8 @@ const posInfo = document.getElementById(CANVAS_CONTAINER_NAME_FOR_THREEJS).getBo
 const CANVAS_CONTAINER_WIDTH = posInfo.width;
 const CANVAS_CONTAINER_HEIGHT = posInfo.height;
 
-const DRONE_MODEL_PATH = "./assets/models/drone-lowpoly/model.obj";
+const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
+const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
 
 export default {
     FLOOR_WIDTH,
@@ -47,5 +48,6 @@ export default {
     CANVAS_CONTAINER_NAME_FOR_THREEJS,
     CANVAS_CONTAINER_WIDTH,
     CANVAS_CONTAINER_HEIGHT,
-    DRONE_MODEL_PATH
+    DRONE_OBJ_PATH,
+    DRONE_MTL_PATH
 }
