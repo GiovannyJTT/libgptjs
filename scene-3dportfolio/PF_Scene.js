@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import GPT_Scene from '../core/GPT_Scene'
 import PF_Common from './PF_Common'
 import PF_ModelSkybox from './PF_ModelSkybox'
+import PF_ModelDrone from './PF_ModelDrone'
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -31,6 +32,7 @@ PF_Scene.prototype.createObjects = function () {
     this.createAxes();
     this.createFloor();
     this.createSkybox();
+    this.createDrone();
 }
 
 PF_Scene.prototype.createAxes = function () {
@@ -83,6 +85,24 @@ PF_Scene.prototype.createSkybox = function () {
     m_skybox.mesh.receiveShadow = false;
 
     this.gpt_models.set("skybox", m_skybox.mesh);
+}
+
+PF_Scene.prototype.createDrone = function () {
+    
+    const _on_loaded_ok = function (object_) {
+        this.drone = object_;
+
+        // obj is a group
+        console.info(this.drone);
+        this.drone.visible = true;
+        this.drone.scale.set(150, 150, 150);
+        this.drone.position.set(-300, 100, 300)
+        // add at runtime not setup
+        this.AddModelToScene("drone", this.drone);
+
+    }.bind(this);
+
+    const m_drone = new PF_ModelDrone(_on_loaded_ok);
 }
 
 /**
