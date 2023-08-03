@@ -92,17 +92,20 @@ PF_Scene.prototype.createDrone = function () {
     const _on_loaded_ok = function (object_) {
         this.drone = object_;
 
-        // obj is a group
-        console.info(this.drone);
+        // drone object is a 3DObjec-group
+        console.debug(this.drone);
+
         this.drone.visible = true;
-        this.drone.scale.set(150, 150, 150);
+        this.drone.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
         this.drone.position.set(-300, 100, 300)
-        // add at runtime not setup
+
+        // add drone.mesh at runtime not setup
         this.AddModelToScene("drone", this.drone);
 
     }.bind(this);
 
-    const m_drone = new PF_ModelDrone(_on_loaded_ok);
+    // save reference to our class so we can spin the propellers on update
+    this.m_drone = new PF_ModelDrone(_on_loaded_ok);
 }
 
 /**
@@ -111,11 +114,16 @@ PF_Scene.prototype.createDrone = function () {
  * @param {float} ms milliseconds passed since last frame
  */
 PF_Scene.prototype.updateObjects = function (ms) {
-    // this.updateDragon(ms);
+    this.updateDrone(ms);
     // this.updateRobot(ms);
     // this.updateBullet();
     // this.on_fsmr_changed();
     // this.im.controllers.get("stats").update();
+}
+
+PF_Scene.prototype.updateDrone = function (ms) {
+    // this.m_drone.spin_drone(ms);
+    this.m_drone.spin_propellers(ms);
 }
 
 /**
