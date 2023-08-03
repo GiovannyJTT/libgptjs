@@ -37,6 +37,7 @@ const CANVAS_CONTAINER_HEIGHT = posInfo.height;
 
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
 const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
+const DRONE_SCALE = 150;
 
 export default {
     FLOOR_WIDTH,
@@ -49,5 +50,6 @@ export default {
     CANVAS_CONTAINER_WIDTH,
     CANVAS_CONTAINER_HEIGHT,
     DRONE_OBJ_PATH,
-    DRONE_MTL_PATH
+    DRONE_MTL_PATH,
+    DRONE_SCALE
 }
