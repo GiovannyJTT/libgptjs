@@ -95,17 +95,14 @@ PF_Scene.prototype.createDrone = function () {
         // drone object is a 3DObjec-group
         console.debug(this.drone);
 
-        this.drone.visible = true;
-        this.drone.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
-        this.drone.position.set(-300, 100, 300)
-
         // add drone.mesh at runtime not setup
         this.AddModelToScene("drone", this.drone);
 
     }.bind(this);
 
     // save reference to our class so we can spin the propellers on update
-    this.m_drone = new PF_ModelDrone(_on_loaded_ok);
+    const waypoints = [new THREE.Vector3(-300, 200, 100)]
+    this.m_drone = new PF_ModelDrone(_on_loaded_ok, this.scene, waypoints);
 }
 
 /**
@@ -124,6 +121,7 @@ PF_Scene.prototype.updateObjects = function (ms) {
 PF_Scene.prototype.updateDrone = function (ms) {
     // this.m_drone.spin_drone(ms);
     this.m_drone.spin_propellers(ms);
+    this.m_drone.move_drone();
 }
 
 /**
