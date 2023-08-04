@@ -42,7 +42,32 @@ const DRONE_PROPELLERS_DISPLACEMENT_XZ = 32.5
 const DRONE_PROPELLERS_DISPLACEMENT_Y = 18.5
 const DRONE_PROPELERS_ROT_DEGREES = 20
 const DRONE_PROPELERS_ROT_CW = DRONE_PROPELERS_ROT_DEGREES * Math.PI / 180.0 // RADS
-const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW 
+const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW
+const DRONE_ROT_Y_MAX = 2 * Math.PI / 180.0
+const DRONE_ROT_Y_MIN = -DRONE_ROT_Y_MAX
+const DRONE_ROT_Y_STEP = DRONE_ROT_Y_MAX / 10.0
+
+let increasing = true
+function get_drone_rot_y (current) {
+    if (increasing) {
+        if (current < DRONE_ROT_Y_MAX) {
+            return current + DRONE_ROT_Y_STEP;
+        }
+        else {
+            increasing = false;
+            return current;
+        }    
+    }
+    else {
+        if (current > DRONE_ROT_Y_MIN) {
+            return current - DRONE_ROT_Y_STEP;
+        }
+        else {
+            increasing = true;
+            return current;
+        }
+    }
+}
 
 export default {
     FLOOR_WIDTH,
@@ -60,5 +85,6 @@ export default {
     DRONE_PROPELLERS_DISPLACEMENT_XZ,
     DRONE_PROPELLERS_DISPLACEMENT_Y,
     DRONE_PROPELERS_ROT_CW,
-    DRONE_PROPELERS_ROT_CCW
+    DRONE_PROPELERS_ROT_CCW,
+    get_drone_rot_y
 }

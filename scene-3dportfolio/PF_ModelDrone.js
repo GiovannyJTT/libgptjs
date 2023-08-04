@@ -44,7 +44,7 @@ PF_ModelDrone.prototype.load_mat = function () {
         }.bind(this),
 
         function on_loading(xhr) {
-            console.info("Material loaded: " + (xhr.loaded / xhr.total * 100) + " %");
+            console.debug("Material loaded: " + (xhr.loaded / xhr.total * 100) + " %");
         },
 
         function on_error (err) {
@@ -69,7 +69,7 @@ PF_ModelDrone.prototype.load_obj = function (mats_) {
         }.bind(this),
 
         function on_loading(xhr) {
-            console.info("Model loaded: " + (xhr.loaded / xhr.total * 100) + " %");
+            console.debug("Model loaded: " + (xhr.loaded / xhr.total * 100) + " %");
         },
 
         function on_error (err) {
@@ -101,6 +101,7 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     this.drone_obj.remove(this.fr);
     this.drone_obj.remove(this.rl);
     this.drone_obj.remove(this.rr);
+    console.debug("Deattached propellers models from drone object3D");
 
     // set up propellers
     this.fl.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
@@ -134,6 +135,7 @@ PF_ModelDrone.prototype.recenter_propellers = function () {
 PF_ModelDrone.prototype.spin_propellers = function (ms) {
     // because it is undefined on_setup and it is loaded on runtime
     if (this.drone_obj !== undefined) {
+        // rotate on its Y axis
         this.fl.rotation.y += PF_Common.DRONE_PROPELERS_ROT_CW;
         this.fr.rotation.y += PF_Common.DRONE_PROPELERS_ROT_CCW;
         this.rl.rotation.y += PF_Common.DRONE_PROPELERS_ROT_CCW;
@@ -148,6 +150,9 @@ PF_ModelDrone.prototype.spin_propellers = function (ms) {
  * TODO: based on drone rotation compute final positions
  */
 PF_ModelDrone.prototype.propellers_to_drone = function () {
+
+
+
     // front left
     this.fl.position.x = this.drone_obj.position.x - PF_Common.DRONE_PROPELLERS_DISPLACEMENT_XZ;
     this.fl.position.y = this.drone_obj.position.y + PF_Common.DRONE_PROPELLERS_DISPLACEMENT_Y;
@@ -173,6 +178,8 @@ PF_ModelDrone.prototype.move_drone = function () {
     if (this.drone_obj !== undefined) {
         this.drone_obj.position.x += 0.1;
         this.drone_obj.position.z -= 0.1;
+
+        this.drone_obj.rotation.y = PF_Common.get_drone_rot_y(this.drone_obj.rotation.y);
     }
 }
 
