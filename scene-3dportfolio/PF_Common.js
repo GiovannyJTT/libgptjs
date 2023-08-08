@@ -48,6 +48,14 @@ const DRONE_ROT_Y_MIN = -DRONE_ROT_Y_MAX
 const DRONE_ROT_Y_STEP = DRONE_ROT_Y_MAX / 100.0
 
 let increasing = true
+
+/**
+ * Generates an angle in the range [`DRONE_ROT_Y_MIN`, `DRONE_ROT_Y_MAX`] in a ping-pong way.
+ * It will start increasing (adding) to the `current angle passed` until it reaches `DRONE_ROT_Y_MAX`,
+ * then it will start decreasing (substracting) to the `current angle passed` until it reaches `DRONE_ROT_Y_MIN`
+ * @param {float} current drone rotation on its Y axis in radians
+ * @returns an angle in radians in [`DRONE_ROT_Y_MIN`, `DRONE_ROT_Y_MAX`]
+ */
 function get_drone_rot_y (current) {
     if (increasing) {
         if (current < DRONE_ROT_Y_MAX) {
@@ -66,6 +74,38 @@ function get_drone_rot_y (current) {
             increasing = true;
             return current;
         }
+    }
+};
+
+let fl_y_acc = 0.0;
+let fr_y_acc = 0.0;
+let rl_y_acc = 0.0;
+let rr_y_acc = 0.0;
+
+/**
+ * Spins the propellers in their vertical axis (Y) in their local-space
+ * - The propellers will spin `Clockwise` or `CounterClockwise` depending on their position on the drone
+ * - FrontLeft (CW), FrontRight (CCW), RearLeft (CCW), RearRight (CW)
+ * @returns {Dictionary} Example: `{"fl": 0.0, "fr": 0.0, "rl": 0.0, "rr": 0.0}`
+ */
+function get_propellers_spin () {
+    // accumulate
+    fl_y_acc += DRONE_PROPELERS_ROT_CW;
+    fr_y_acc += DRONE_PROPELERS_ROT_CCW;
+    rl_y_acc += DRONE_PROPELERS_ROT_CCW;
+    rr_y_acc += DRONE_PROPELERS_ROT_CW;
+
+    // clamp
+    fl_y_acc = (fl_y_acc >= 2*Math.PI || fl_y_acc <= -2*Math.PI)? 0.0 : fl_y_acc;
+    fr_y_acc = (fr_y_acc >= 2*Math.PI || fr_y_acc <= -2*Math.PI)? 0.0 : fr_y_acc;
+    rl_y_acc = (rl_y_acc >= 2*Math.PI || rl_y_acc <= -2*Math.PI)? 0.0 : rl_y_acc;
+    rr_y_acc = (rr_y_acc >= 2*Math.PI || rr_y_acc <= -2*Math.PI)? 0.0 : rr_y_acc;
+
+    return {
+        "fl": fl_y_acc,
+        "fr": fr_y_acc,
+        "rl": rl_y_acc,
+        "rr": rr_y_acc
     }
 }
 
@@ -86,5 +126,6 @@ export default {
     DRONE_PROPELLERS_DISPLACEMENT_Y,
     DRONE_PROPELERS_ROT_CW,
     DRONE_PROPELERS_ROT_CCW,
-    get_drone_rot_y
+    get_drone_rot_y,
+    get_propellers_spin
 }

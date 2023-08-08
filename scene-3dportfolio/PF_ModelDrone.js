@@ -84,7 +84,6 @@ PF_ModelDrone.prototype.load_obj = function (mats_) {
  * 3. Deattaches the propellers-Object3D from the parent drone-Object3D
  * 4. Applies same scale as drone-Object3D
  * 5. Recomputes center of the object3D
- * 6. Initializes values for spinning propellers
  * @param {*} obj_ 
  */
 PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
@@ -118,12 +117,6 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     this.rl.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.rr.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.recenter_propellers();
-
-    // initial values
-    this.fl_y_acc = 0.0;
-    this.fr_y_acc = 0.0;
-    this.rl_y_acc = 0.0;
-    this.rr_y_acc = 0.0;
 };
 
 /**
@@ -183,27 +176,17 @@ PF_ModelDrone.prototype.propellers_rot_aligned_with_drone_rotation_LS = function
 
 /**
  * Spins the propellers in their vertical axis (Y) in their local-space
- * - The propellers will spin Clockwise or CounterClockwise depending on their configuration
+ * - The propellers will spin `Clockwise` or `CounterClockwise` depending on their position on the drone
  * - FrontLeft (CW), FrontRight (CCW), RearLeft (CCW), RearRight (CW)
  */
 PF_ModelDrone.prototype.propellers_spin_LS = function () {
-    // accumulate
-    this.fl_y_acc += PF_Common.DRONE_PROPELERS_ROT_CW;
-    this.fr_y_acc += PF_Common.DRONE_PROPELERS_ROT_CCW;
-    this.rl_y_acc += PF_Common.DRONE_PROPELERS_ROT_CCW;
-    this.rr_y_acc += PF_Common.DRONE_PROPELERS_ROT_CW;
+    const _spins = PF_Common.get_propellers_spin();
 
-    // clamp
-    this.fl_y_acc = (this.fl_y_acc >= 2*Math.PI || this.fl_y_acc <= -2*Math.PI)? 0.0 : this.fl_y_acc;
-    this.fr_y_acc = (this.fr_y_acc >= 2*Math.PI || this.fr_y_acc <= -2*Math.PI)? 0.0 : this.fr_y_acc;
-    this.rl_rot_acc = (this.rl_rot_acc >= 2*Math.PI || this.rl_y_acc <= -2*Math.PI)? 0.0 : this.rl_rot_acc;
-    this.rr_y_acc = (this.rr_y_acc >= 2*Math.PI || this.rr_y_acc <= -2*Math.PI)? 0.0 : this.rr_y_acc;
-
-    // apply (localaxis)
-    this.fl.rotateY(this.fl_y_acc);
-    this.fr.rotateY(this.fr_y_acc);
-    this.rl.rotateY(this.rl_y_acc);
-    this.rr.rotateY(this.rr_y_acc);
+    // apply in local-space
+    this.fl.rotateY(_spins["fl"]);
+    this.fr.rotateY(_spins["fr"]);
+    this.rl.rotateY(_spins["rl"]);
+    this.rr.rotateY(_spins["rr"]);
 }
 
 /**
