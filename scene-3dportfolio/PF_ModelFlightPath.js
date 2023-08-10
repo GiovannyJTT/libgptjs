@@ -10,7 +10,7 @@ import PF_Common from "./PF_Common";
 class PF_ModelFlightPath {
     constructor () {
         // 1. Interpolate more vertices from control points
-        this.waypoints = this.compute_waypoints();
+        this.waypoints = this.get_waypoints();
         this.spline_points3D = undefined;
 
         // 2. call parent class constructor (in order to construct geometry and mesh)
@@ -25,17 +25,22 @@ class PF_ModelFlightPath {
 };
 
 /**
- * @return {[THREE.Vector3]} Array of Vector3 containing coordinates of control-points in world-space
- *  that match several countries on the europe-map on the floor-texture
+ * @return {[THREE.Vector3]} Array of Vector3 containing coordinates of control-points
+ * in world-space that match several countries on the europe-map on the floor-texture.
+ * It also takes into account `take-off` and `land` waypoints
  */
-PF_ModelFlightPath.prototype.compute_waypoints = function () {
-        
-    const _p_valencia = new THREE.Vector3(100, 100, -100);
-    const _p_helsinki = new THREE.Vector3(-200, 100, -200);
-    const _p_odense = new THREE.Vector3(300, 100, -300);
-    const _p_oslo = new THREE.Vector3(-400, 100, -400);
+PF_ModelFlightPath.prototype.get_waypoints = function () {
+    const res = []
+    const _wps = PF_Common.FPATH_WPS;
+    for (let i=0; i < _wps.length; i++) {
+        let _wp = _wps[i];
+        let _p_ground = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
+        let _p_altitude = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MAX_HEIGHT_MM, _wp.coords.y);
 
-    return [_p_valencia, _p_helsinki, _p_odense, _p_oslo]
+        res.push(_p_ground);
+        res.push(_p_altitude);
+    }
+    return res;
 }
 
 /**
@@ -66,12 +71,15 @@ PF_ModelFlightPath.prototype.get_geometry = function () {
 
 /**
  * Override
+ * - Due to limitations of the OpenGL Core Profile with the WebGL rendere 
+ * on most platforms linewidth will always be 1 regardless of the set value.
+ * - On Android linewidth works, but we will use 1 so we will have same rendering
  */
 PF_ModelFlightPath.prototype.get_material = function () {
     const _mat = new THREE.LineDashedMaterial({
         vertexColors: true,
         linewidth: 1,
-        gapSize: 0.5,
+        gapSize: 1.0,
         dashSize: 1.0
     });
 
@@ -93,12 +101,12 @@ PF_ModelFlightPath.prototype.get_spline_points_and_colors = function () {
 
     const _spline_points3D = [];
     const _spline_control_points = new THREE.CatmullRomCurve3(this.waypoints);
-    const _positions = new Float32Array(PF_Common.FLIGHT_PATH_SPLINE_NUM_SEGMENTS * 3); // 3 floats per each vertex
+    const _positions = new Float32Array(PF_Common.FPATH_SPLINE_NUM_SEGMENTS * 3); // 3 floats per each vertex
     const _colors = new Float32Array(_positions.length);
     const _tmp_color = new THREE.Color();
 
-    for (let i=0, c=0; i < PF_Common.FLIGHT_PATH_SPLINE_NUM_SEGMENTS; i++, c += 3) {
-        const _t = i / PF_Common.FLIGHT_PATH_SPLINE_NUM_SEGMENTS
+    for (let i=0, c=0; i < PF_Common.FPATH_SPLINE_NUM_SEGMENTS; i++, c += 3) {
+        const _t = i / PF_Common.FPATH_SPLINE_NUM_SEGMENTS
 
         // get point from spline (extrapolated coordnates) out of the control-points that form the curve (waypoints)
         const _p = new THREE.Vector3();

@@ -109,9 +109,45 @@ function get_propellers_spin () {
     }
 }
 
-const FLIGHT_PATH_NUM_LOCATIONS = 4
-const FLIGHT_PATH_SPLINE_NUM_SEGMENTS = FLIGHT_PATH_NUM_LOCATIONS * 10
-const FLIGHT_PATH_STEP_DURATION_MS = FLIGHT_PATH_SPLINE_NUM_SEGMENTS * 10
+// these coords are for src/resources/images/europe-map-1800x1800.jpg
+const IMG_MAP_RESOLUTION = {x: 1800, y: 1800}
+const IMG_MAP_COORDS_VALENCIA = {x: 532, y: 1560}
+const IMG_MAP_COORDS_HELSINKI = {x: 1518, y: 460}
+const IMG_MAP_COORDS_ODENSE = {x: 972, y: 720}
+const IMG_MAP_COORDS_OSLO = {x: 980, y: 475}
+
+const FPATH_WP_VALENCIA = imgcoords_to_worldspace(IMG_MAP_COORDS_VALENCIA);
+const FPATH_WP_HELSINKI = imgcoords_to_worldspace(IMG_MAP_COORDS_HELSINKI);
+const FPATH_WP_ODENSE = imgcoords_to_worldspace(IMG_MAP_COORDS_ODENSE);
+const FPATH_WP_OSLO = imgcoords_to_worldspace(IMG_MAP_COORDS_OSLO);
+
+function imgcoords_to_worldspace (img_coords) {
+    const u = img_coords.x / IMG_MAP_RESOLUTION.x;
+    const v = img_coords.y / IMG_MAP_RESOLUTION.y;
+
+    // origin (0,0) is at center of image
+    const c = {x: 0.5, y: 0.5}
+    const cart = {x: undefined, y: undefined}
+    cart.x = u < c.x? -(c.x - u) : (u - c.x);
+    cart.y = v < c.y? -(c.y - v) : (v - c.y);
+
+    // apply scale
+    const ws = {x: cart.x * FLOOR_WIDTH, y: cart.y * FLOOR_WIDTH}
+    return ws;
+}
+
+const FPATH_WPS = [
+    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March"},
+    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March"},
+    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July"},
+    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-November"}
+]
+
+// Configure spline curve based on num locations
+const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
+const FPATH_STEP_DURATION_MS = FPATH_SPLINE_NUM_SEGMENTS * 10 // 10 ms per segment
+const FPATH_MIN_HEIGHT_MM = 44 // depends on drone scale
+const FPATH_MAX_HEIGHT_MM = 200
 
 export default {
     FLOOR_WIDTH,
@@ -132,6 +168,9 @@ export default {
     DRONE_PROPELERS_ROT_CCW,
     get_drone_rot_y,
     get_propellers_spin,
-    FLIGHT_PATH_SPLINE_NUM_SEGMENTS,
-    FLIGHT_PATH_STEP_DURATION_MS
+    FPATH_SPLINE_NUM_SEGMENTS,
+    FPATH_STEP_DURATION_MS,
+    FPATH_MIN_HEIGHT_MM,
+    FPATH_MAX_HEIGHT_MM,
+    FPATH_WPS
 }
