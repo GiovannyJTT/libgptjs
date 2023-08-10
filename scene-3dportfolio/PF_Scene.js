@@ -33,8 +33,8 @@ PF_Scene.prototype.createObjects = function () {
     this.createAxes();
     this.createFloor();
     this.createSkybox();
-    this.createDrone();
     this.createFlightPath();
+    this.createDrone();
 }
 
 PF_Scene.prototype.createAxes = function () {
@@ -89,6 +89,18 @@ PF_Scene.prototype.createSkybox = function () {
     this.gpt_models.set("skybox", m_skybox.mesh);
 }
 
+PF_Scene.prototype.createFlightPath = function () {
+    this.m_fpath = new PF_ModelFlightPath();
+    this.m_fpath.mesh.castShadow = false;
+    this.m_fpath.mesh.receiveShadow = false;
+
+    this.gpt_models.set("flight_path", this.m_fpath.mesh);
+}
+
+/**
+ * Creates Drone model and uses `this.m_fpath` to
+ * pass the `spline_points3D` to move the drone along on update
+ */
 PF_Scene.prototype.createDrone = function () {
     
     const _on_loaded_ok = function (object_) {
@@ -103,16 +115,7 @@ PF_Scene.prototype.createDrone = function () {
     }.bind(this);
 
     // save reference to our class so we can spin the propellers on update
-    const waypoints = [new THREE.Vector3(-300, 200, 100)]
-    this.m_drone = new PF_ModelDrone(_on_loaded_ok, this.scene, waypoints);
-}
-
-PF_Scene.prototype.createFlightPath = function () {
-    this.m_fpath = new PF_ModelFlightPath();
-    this.m_fpath.mesh.castShadow = false;
-    this.m_fpath.mesh.receiveShadow = false;
-
-    this.gpt_models.set("flight_path", this.m_fpath.mesh);
+    this.m_drone = new PF_ModelDrone(_on_loaded_ok, this.scene, this.m_fpath.spline_points3D);
 }
 
 /**
@@ -122,15 +125,11 @@ PF_Scene.prototype.createFlightPath = function () {
  */
 PF_Scene.prototype.updateObjects = function (ms) {
     this.updateDrone(ms);
-    // this.updateRobot(ms);
-    // this.updateBullet();
-    // this.on_fsmr_changed();
-    // this.im.controllers.get("stats").update();
 }
 
 PF_Scene.prototype.updateDrone = function (ms) {
     this.m_drone.spin_propellers(ms);
-    this.m_drone.move_drone();
+    this.m_drone.move_to_next_point_interpolated(ms);
 }
 
 /**

@@ -29,11 +29,11 @@ class PF_ModelFlightPath {
  *  that match several countries on the europe-map on the floor-texture
  */
 PF_ModelFlightPath.prototype.compute_waypoints = function () {
-    
-    const _p_valencia = new THREE.Vector3(100, 100, 100);
-    const _p_helsinki = new THREE.Vector3(-200, 100, 200);
-    const _p_odense = new THREE.Vector3(300, 100, 300);
-    const _p_oslo = new THREE.Vector3(-400, 100, 400);
+        
+    const _p_valencia = new THREE.Vector3(100, 100, -100);
+    const _p_helsinki = new THREE.Vector3(-200, 100, -200);
+    const _p_odense = new THREE.Vector3(300, 100, -300);
+    const _p_oslo = new THREE.Vector3(-400, 100, -400);
 
     return [_p_valencia, _p_helsinki, _p_odense, _p_oslo]
 }
@@ -132,7 +132,7 @@ PF_ModelFlightPath.prototype.get_spline_points_and_colors = function () {
  * Extending method (calling parent method and performing pre / post operations)
  */
 PF_ModelFlightPath.prototype.dispose_buffers = function () {
-    
+
     GPT_Model.prototype.dispose_buffers.call(this);
     this.waypoints = null;
     this.spline_points3D = null;

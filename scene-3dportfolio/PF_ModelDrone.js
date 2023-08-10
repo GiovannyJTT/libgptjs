@@ -7,17 +7,18 @@ import PF_Common from "./PF_Common"
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader"
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from "three"
+import { lerp } from "three/src/math/MathUtils";
 
 class PF_ModelDrone {
     /**
      * @param {Function} on_loaded_external_cb callback to be run when model fully loaded
      * @param {THREE.Scene} webgl_scene neede to attach / deattach properllers at runtime
-     * @param {Array} waypoints list of waypoints (Vector3) to move the drone along
+     * @param {Array} flight_path_points list of flight path points (Vector3) to move the drone along
      */
-    constructor(on_loaded_external_cb, webgl_scene, waypoints){
+    constructor(on_loaded_external_cb, webgl_scene, flight_path_points){
         this.on_loaded_external_cb = on_loaded_external_cb;
         this.scene = webgl_scene
-        this.waypoints = waypoints
+        this.fpath = flight_path_points
 
         this.drone_obj = undefined;
         this.fl = undefined; // front left
@@ -90,7 +91,7 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     // set up drone
     this.drone_obj = obj_;
     this.drone_obj.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
-    this.drone_obj.position.set(this.waypoints[0].x, this.waypoints[0].y, this.waypoints[0].z);
+    this.drone_obj.position.set(this.fpath[0].x, this.fpath[0].y, this.fpath[0].z);
 
     // get propellers Object3D
     this.fl = this.drone_obj.getObjectByName("mesh1326258638");
@@ -117,6 +118,10 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     this.rl.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.rr.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.recenter_propellers();
+
+    // initialization
+    this.fp_index = 0;
+    this.prevTS = performance.now();
 };
 
 /**
@@ -265,13 +270,40 @@ PF_ModelDrone.prototype.propellers_to_drone_WS = function () {
     this.rr.position.z += this.drone_obj.position.z
 }
 
-PF_ModelDrone.prototype.move_drone = function () {
-    if (this.drone_obj !== undefined) {
-        this.drone_obj.position.x += 0.25;
-        this.drone_obj.position.z -= 0.25;
+PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
+    if (this.drone_obj === undefined) {
+        return false;
+    }
+         
+    const _last_index = this.fpath.length - 1;
+    if (this.fp_index >= _last_index) {
+        return false;
+    }
 
-        this.drone_obj.rotation.y = PF_Common.get_drone_rot_y(this.drone_obj.rotation.y);
-        this.drone_obj.rotation.z = this.drone_obj.rotation.y / 2.0;
+    const _nowTS = performance.now();
+    const _elapsed = _nowTS - this.prevTS;
+    
+    if (_elapsed < PF_Common.FLIGHT_PATH_STEP_DURATION_MS) {
+        
+        // current part of the interval based on elapsed time
+        const _i = _elapsed / PF_Common.FLIGHT_PATH_STEP_DURATION_MS;
+        // current point3D
+        const _p = this.fpath[this.fp_index];
+        // next point3D
+        const _p_next = this.fpath[this.fp_index + 1];
+        // interpolate coordinates between current and next point
+        const _ip_x = lerp(_p.x, _p_next.x, _i);
+        const _ip_y = lerp(_p.y, _p_next.y, _i);
+        const _ip_z = lerp(_p.z, _p_next.z, _i);
+
+        // apply
+        this.drone_obj.position.set(_ip_x, _ip_y, _ip_z);
+        return true;
+    }
+    else {
+        this.fp_index++;
+        this.prevTS = performance.now();
+        return false;
     }
 }
 
