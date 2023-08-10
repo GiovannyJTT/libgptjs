@@ -283,10 +283,10 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
     const _nowTS = performance.now();
     const _elapsed = _nowTS - this.prevTS;
     
-    if (_elapsed < PF_Common.FLIGHT_PATH_STEP_DURATION_MS) {
+    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {
         
         // current part of the interval based on elapsed time
-        const _i = _elapsed / PF_Common.FLIGHT_PATH_STEP_DURATION_MS;
+        const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
         // current point3D
         const _p = this.fpath[this.fp_index];
         // next point3D
