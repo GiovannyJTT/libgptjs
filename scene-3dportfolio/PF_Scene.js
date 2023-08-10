@@ -8,6 +8,7 @@ import GPT_Scene from '../core/GPT_Scene'
 import PF_Common from './PF_Common'
 import PF_ModelSkybox from './PF_ModelSkybox'
 import PF_ModelDrone from './PF_ModelDrone'
+import PF_ModelFlightPath from './PF_ModelFlightPath'
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -33,6 +34,7 @@ PF_Scene.prototype.createObjects = function () {
     this.createFloor();
     this.createSkybox();
     this.createDrone();
+    this.createFlightPath();
 }
 
 PF_Scene.prototype.createAxes = function () {
@@ -105,6 +107,14 @@ PF_Scene.prototype.createDrone = function () {
     this.m_drone = new PF_ModelDrone(_on_loaded_ok, this.scene, waypoints);
 }
 
+PF_Scene.prototype.createFlightPath = function () {
+    this.m_fpath = new PF_ModelFlightPath();
+    this.m_fpath.mesh.castShadow = false;
+    this.m_fpath.mesh.receiveShadow = false;
+
+    this.gpt_models.set("flight_path", this.m_fpath.mesh);
+}
+
 /**
  * Per-frame update
  * Overrides updateObjects function in child object
@@ -119,7 +129,6 @@ PF_Scene.prototype.updateObjects = function (ms) {
 }
 
 PF_Scene.prototype.updateDrone = function (ms) {
-    // this.m_drone.spin_drone(ms);
     this.m_drone.spin_propellers(ms);
     this.m_drone.move_drone();
 }

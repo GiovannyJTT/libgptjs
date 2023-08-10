@@ -109,6 +109,8 @@ function get_propellers_spin () {
     }
 }
 
+const FLIGHT_PATH_SPLINE_NUM_SEGMENTS = 40
+
 export default {
     FLOOR_WIDTH,
     SKYBOX_WIDTH,
@@ -127,5 +129,6 @@ export default {
     DRONE_PROPELERS_ROT_CW,
     DRONE_PROPELERS_ROT_CCW,
     get_drone_rot_y,
-    get_propellers_spin
+    get_propellers_spin,
+    FLIGHT_PATH_SPLINE_NUM_SEGMENTS
 }
