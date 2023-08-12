@@ -38,22 +38,6 @@ PF_ModelFlightPath.prototype.get_waypoints = function () {
         let _p_ground = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
         let _p_altitude = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MAX_HEIGHT_MM, _wp.coords.y);
 
-        /*
-        if (0 == i) {
-            res.push(_p_ground);
-            res.push(_p_altitude);
-        }
-        else {
-            // landing
-            res.push(_p_altitude);
-            res.push(_p_ground);
-            
-            if (i < _wps.length-2) {
-                // taking-off next step
-                res.push(_p_altitude);
-            }
-        }
-        */
         res.push(_p_altitude);
         res.push(_p_ground);
         res.push(_p_altitude);
