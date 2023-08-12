@@ -32,11 +32,29 @@ class PF_ModelFlightPath {
 PF_ModelFlightPath.prototype.get_waypoints = function () {
     const res = []
     const _wps = PF_Common.FPATH_WPS;
+
     for (let i=0; i < _wps.length; i++) {
         let _wp = _wps[i];
         let _p_ground = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
         let _p_altitude = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MAX_HEIGHT_MM, _wp.coords.y);
 
+        /*
+        if (0 == i) {
+            res.push(_p_ground);
+            res.push(_p_altitude);
+        }
+        else {
+            // landing
+            res.push(_p_altitude);
+            res.push(_p_ground);
+            
+            if (i < _wps.length-2) {
+                // taking-off next step
+                res.push(_p_altitude);
+            }
+        }
+        */
+        res.push(_p_altitude);
         res.push(_p_ground);
         res.push(_p_altitude);
     }
@@ -78,9 +96,9 @@ PF_ModelFlightPath.prototype.get_geometry = function () {
 PF_ModelFlightPath.prototype.get_material = function () {
     const _mat = new THREE.LineDashedMaterial({
         vertexColors: true,
-        linewidth: 1,
-        gapSize: 1.0,
-        dashSize: 1.0
+        linewidth: 2,
+        gapSize: 10.0,
+        dashSize: 10.0
     });
 
     return _mat;
