@@ -37,28 +37,29 @@ const CANVAS_CONTAINER_HEIGHT = posInfo.height;
 
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
 const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
-const DRONE_SCALE = 150;
-const DRONE_PROPELLERS_DISPLACEMENT_XZ = 32.5
-const DRONE_PROPELLERS_DISPLACEMENT_Y = 18.5
+const DRONE_SCALE = 75
+const DRONE_PROPELLERS_DISPLACEMENT_XZ = 16.25
+const DRONE_PROPELLERS_DISPLACEMENT_Y = 9.25
+const DRONE_BOUNDING_BOX_SIDE = 44
 const DRONE_PROPELERS_ROT_DEGREES = 20
 const DRONE_PROPELERS_ROT_CW = DRONE_PROPELERS_ROT_DEGREES * Math.PI / 180.0 // RADS
 const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW
-const DRONE_ROT_Y_MAX = 45 * Math.PI / 180.0
-const DRONE_ROT_Y_MIN = -DRONE_ROT_Y_MAX
-const DRONE_ROT_Y_STEP = DRONE_ROT_Y_MAX / 100.0
+const DRONE_ROT_X_MAX = 45 * Math.PI / 180.0
+const DRONE_ROT_X_MIN = -DRONE_ROT_X_MAX
+const DRONE_ROT_Y_STEP = DRONE_ROT_X_MAX / 100.0
 
 let increasing = true
 
 /**
- * Generates an angle in the range [`DRONE_ROT_Y_MIN`, `DRONE_ROT_Y_MAX`] in a ping-pong way.
- * It will start increasing (adding) to the `current angle passed` until it reaches `DRONE_ROT_Y_MAX`,
- * then it will start decreasing (substracting) to the `current angle passed` until it reaches `DRONE_ROT_Y_MIN`
+ * Generates an angle in the range [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`] in a ping-pong way.
+ * It will start increasing (adding) to the `current angle passed` until it reaches `DRONE_ROT_X_MAX`,
+ * then it will start decreasing (substracting) to the `current angle passed` until it reaches `DRONE_ROT_X_MIN`
  * @param {float} current drone rotation on its Y axis in radians
- * @returns an angle in radians in [`DRONE_ROT_Y_MIN`, `DRONE_ROT_Y_MAX`]
+ * @returns an angle in radians in [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`]
  */
-function get_drone_rot_y (current) {
+function get_drone_rot_x_pingpong (current) {
     if (increasing) {
-        if (current < DRONE_ROT_Y_MAX) {
+        if (current < DRONE_ROT_X_MAX) {
             return current + DRONE_ROT_Y_STEP;
         }
         else {
@@ -67,7 +68,7 @@ function get_drone_rot_y (current) {
         }    
     }
     else {
-        if (current > DRONE_ROT_Y_MIN) {
+        if (current > DRONE_ROT_X_MIN) {
             return current - DRONE_ROT_Y_STEP;
         }
         else {
@@ -146,8 +147,8 @@ const FPATH_WPS = [
 // Configure spline curve based on num locations
 const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
 const FPATH_STEP_DURATION_MS = FPATH_SPLINE_NUM_SEGMENTS * 10 // 10 ms per segment
-const FPATH_MIN_HEIGHT_MM = 44 // depends on drone scale
-const FPATH_MAX_HEIGHT_MM = 200
+const FPATH_MIN_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE / 2.0
+const FPATH_MAX_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE * 3
 
 export default {
     FLOOR_WIDTH,
@@ -166,7 +167,7 @@ export default {
     DRONE_PROPELLERS_DISPLACEMENT_Y,
     DRONE_PROPELERS_ROT_CW,
     DRONE_PROPELERS_ROT_CCW,
-    get_drone_rot_y,
+    get_drone_rot_x_pingpong,
     get_propellers_spin,
     FPATH_SPLINE_NUM_SEGMENTS,
     FPATH_STEP_DURATION_MS,
