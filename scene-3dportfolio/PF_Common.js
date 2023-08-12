@@ -44,9 +44,9 @@ const DRONE_BOUNDING_BOX_SIDE = 44
 const DRONE_PROPELERS_ROT_DEGREES = 20
 const DRONE_PROPELERS_ROT_CW = DRONE_PROPELERS_ROT_DEGREES * Math.PI / 180.0 // RADS
 const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW
-const DRONE_ROT_X_MAX = 45 * Math.PI / 180.0
+const DRONE_ROT_X_MAX = 3 * Math.PI / 180.0
 const DRONE_ROT_X_MIN = -DRONE_ROT_X_MAX
-const DRONE_ROT_Y_STEP = DRONE_ROT_X_MAX / 100.0
+const DRONE_ROT_Y_STEP = DRONE_ROT_X_MAX / 20.0
 
 let increasing = true
 
@@ -54,7 +54,7 @@ let increasing = true
  * Generates an angle in the range [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`] in a ping-pong way.
  * It will start increasing (adding) to the `current angle passed` until it reaches `DRONE_ROT_X_MAX`,
  * then it will start decreasing (substracting) to the `current angle passed` until it reaches `DRONE_ROT_X_MIN`
- * @param {float} current drone rotation on its Y axis in radians
+ * @param {float} current drone rotation on its `X` axis in radians
  * @returns an angle in radians in [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`]
  */
 function get_drone_rot_x_pingpong (current) {
