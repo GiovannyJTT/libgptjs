@@ -32,16 +32,35 @@ class PF_ModelFlightPath {
 PF_ModelFlightPath.prototype.get_waypoints = function () {
     const res = []
     const _wps = PF_Common.FPATH_WPS;
+    const _disp = PF_Common.FPATH_MIN_HEIGHT_MM;
 
     for (let i=0; i < _wps.length; i++) {
         let _wp = _wps[i];
-        let _p_ground = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
+        
+        // point-on-sky
         let _p_altitude = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MAX_HEIGHT_MM, _wp.coords.y);
 
+        // point-on-ground
+        let _p_ground = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
+
+        // point-on-ground displaced to avoid vertically-aligned points when generating the spline
+        let _p_ground_disp = new THREE.Vector3(_wp.coords.x + _disp, PF_Common.FPATH_MIN_HEIGHT_MM, _wp.coords.y);
+
+        // point-on-sky displaced to avoid vertically-aligned points when generating the spline
+        let _p_altitude_disp = new THREE.Vector3(_wp.coords.x, PF_Common.FPATH_MAX_HEIGHT_MM, _wp.coords.y + _disp);
+
+        if (i==0){
+            res.push(_p_altitude_disp);
+        }
         res.push(_p_altitude);
+        res.push(_p_ground_disp);
         res.push(_p_ground);
-        res.push(_p_altitude);
+        res.push(_p_altitude_disp);
+        if (i==_wps.length-1){
+            res.push(_p_altitude);
+        }
     }
+
     return res;
 }
 

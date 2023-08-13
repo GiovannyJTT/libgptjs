@@ -316,7 +316,7 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
  * Note: when two points3D are vertically aligned `THREE.Object3D.lookAt()` can flip the object
  *  because of gimbal-lock
  * 
- * @param {THREE.Vector3} _lookAt_index will be computed every frame as `this.fp_index + PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP`
+ * @param {THREE.Vector3} _lookAt_index will be computed every frame as `this.fp_index + 1`
  *  so the drone will keep most of time horizontal
  * @returns {boolean} true when rotated properly, false otherwise
  */
@@ -325,7 +325,7 @@ PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
         return false;
     }
     
-    const _lookAt_index = this.fp_index + PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP;
+    const _lookAt_index = this.fp_index + 1;
     const _last_index = this.fpath_curve.length - 1;
     if (_lookAt_index >= _last_index) {
         return false;
