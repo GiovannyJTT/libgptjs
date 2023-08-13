@@ -13,12 +13,13 @@ class PF_ModelDrone {
     /**
      * @param {Function} on_loaded_external_cb callback to be run when model fully loaded
      * @param {THREE.Scene} webgl_scene neede to attach / deattach properllers at runtime
-     * @param {Array} flight_path_points list of flight path points (Vector3) to move the drone along
+     * @param {Array[THREE.Vector3]} fpath_curve_points list of flight path points (Vector3)
+     *  that form the curve to move the drone along
      */
-    constructor(on_loaded_external_cb, webgl_scene, flight_path_points){
+    constructor(on_loaded_external_cb, webgl_scene, fpath_curve_points){
         this.on_loaded_external_cb = on_loaded_external_cb;
-        this.scene = webgl_scene
-        this.fpath = flight_path_points
+        this.scene = webgl_scene;
+        this.fpath_curve = fpath_curve_points;
 
         this.drone_obj = undefined;
         this.fl = undefined; // front left
@@ -91,7 +92,7 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     // set up drone
     this.drone_obj = obj_;
     this.drone_obj.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
-    this.drone_obj.position.set(this.fpath[0].x, this.fpath[0].y, this.fpath[0].z);
+    this.drone_obj.position.set(this.fpath_curve[0].x, this.fpath_curve[0].y, this.fpath_curve[0].z);
 
     // get propellers Object3D
     this.fl = this.drone_obj.getObjectByName("mesh1326258638");
@@ -121,7 +122,7 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
 
     // initialization
     this.fp_index = 0;
-    this.prevTS = performance.now();
+    this.prevTS_pos = performance.now();
 };
 
 /**
@@ -275,22 +276,21 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
         return false;
     }
          
-    const _last_index = this.fpath.length - 1;
+    const _last_index = this.fpath_curve.length - 1;
     if (this.fp_index >= _last_index) {
         return false;
     }
 
     const _nowTS = performance.now();
-    const _elapsed = _nowTS - this.prevTS;
+    const _elapsed = _nowTS - this.prevTS_pos;
     
-    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {
-        
-        // current part of the interval based on elapsed time
+    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {        
+        // interpolation factor (current part of the interval based on elapsed time)
         const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
         // current point3D
-        const _p = this.fpath[this.fp_index];
+        const _p = this.fpath_curve[this.fp_index];
         // next point3D
-        const _p_next = this.fpath[this.fp_index + 1];
+        const _p_next = this.fpath_curve[this.fp_index + 1];
         // interpolate coordinates between current and next point
         const _ip_x = lerp(_p.x, _p_next.x, _i);
         const _ip_y = lerp(_p.y, _p_next.y, _i);
@@ -302,7 +302,54 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
     }
     else {
         this.fp_index++;
-        this.prevTS = performance.now();
+        this.prevTS_pos = performance.now();
+        return false;
+    }
+}
+
+/**
+ * WARNING: Run this function after `move_to_next_point_interpolated()` to update timestamps and `this.fp_index`
+ * (here they are readed but not written)
+ * 
+ * Applies a rotation to the drone by making it `lookAt` an interpolated position between 2 points3D
+ * 
+ * Note: when two points3D are vertically aligned `THREE.Object3D.lookAt()` can flip the object
+ *  because of gimbal-lock
+ * 
+ * @param {THREE.Vector3} _lookAt_index will be computed every frame as `this.fp_index + PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP`
+ *  so the drone will keep most of time horizontal
+ * @returns {boolean} true when rotated properly, false otherwise
+ */
+PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
+    if (this.drone_obj === undefined) {
+        return false;
+    }
+    
+    const _lookAt_index = this.fp_index + PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP;
+    const _last_index = this.fpath_curve.length - 1;
+    if (_lookAt_index >= _last_index) {
+        return false;
+    }
+
+    const _nowTS = performance.now();
+    const _elapsed = _nowTS - this.prevTS_pos;
+
+    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {
+        // start_point (current target point)
+        const _tp = this.fpath_curve[_lookAt_index];
+        // end_point (next target point)
+        const _tp_next = this.fpath_curve[_lookAt_index + 1];
+        // lookAt_point (interpolated point between current and next target point based on time elapsed)
+        const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
+        const _la_x = lerp(_tp.x, _tp_next.x, _i);
+        const _la_y = lerp(_tp.y, _tp_next.y, _i);
+        const _la_z = lerp(_tp.z, _tp_next.z, _i);
+
+        // apply rotation to point drone-nose to target-point
+        this.drone_obj.lookAt(_la_x, _la_y, _la_z);
+        return true;
+    }
+    else {
         return false;
     }
 }
