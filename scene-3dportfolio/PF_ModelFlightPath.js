@@ -92,9 +92,9 @@ PF_ModelFlightPath.prototype.get_geometry = function () {
 
 /**
  * Override
- * - Due to limitations of the OpenGL Core Profile with the WebGL rendere 
+ * - Due to limitations of the OpenGL Core Profile with the WebGL renderer
  * on most platforms linewidth will always be 1 regardless of the set value.
- * - On Android linewidth works, but we will use 1 so we will have same rendering
+ * - On Android linewidth works
  */
 PF_ModelFlightPath.prototype.get_material = function () {
     const _mat = new THREE.LineDashedMaterial({
@@ -109,7 +109,7 @@ PF_ModelFlightPath.prototype.get_material = function () {
 
 /**
  * Creates a Spline using catmull-rom method and `this.waypoints` as control points
- * - Using PF_Common.FLIGH_PATH_NUM_SEGMENTS
+ * - Using `PF_Common.FLIGH_PATH_NUM_SEGMENTS`
  * - Saves final `spline_points3D` to be used later to move the drone along
  * @param {Array} this.waypoints must be already set to be used as contorl points to build the spline
  * @returns {Dictionar} `{"positions": Float32Array, "colors": Float32Array, "spline_points3D": Array of Vector3}`
