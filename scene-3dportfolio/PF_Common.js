@@ -146,6 +146,7 @@ const FPATH_WPS = [
 
 // Configure spline curve based on num locations
 const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
+const FPATH_SPLINE_NUM_SEGMENTS_PER_WP = FPATH_SPLINE_NUM_SEGMENTS / FPATH_WPS.length
 const FPATH_STEP_DURATION_MS = FPATH_SPLINE_NUM_SEGMENTS * 10 // 10 ms per segment
 const FPATH_MIN_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE / 2.0
 const FPATH_MAX_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE * 3
@@ -170,6 +171,7 @@ export default {
     get_drone_rot_x_pingpong,
     get_propellers_spin,
     FPATH_SPLINE_NUM_SEGMENTS,
+    FPATH_SPLINE_NUM_SEGMENTS_PER_WP,
     FPATH_STEP_DURATION_MS,
     FPATH_MIN_HEIGHT_MM,
     FPATH_MAX_HEIGHT_MM,
