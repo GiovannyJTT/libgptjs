@@ -10,8 +10,7 @@ import PF_Common from './PF_Common'
 import PF_ModelSkybox from './PF_ModelSkybox'
 import PF_ModelDrone from './PF_ModelDrone'
 import PF_ModelFlightPath from './PF_ModelFlightPath'
-// import OrbitControls from './external-libs/OrbitControls' // using our custom import
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import PF_FollowCamera from './PF_FollowCamera'
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -19,6 +18,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
  * Renders several animations by using vertical scroll
  */
 function PF_Scene() {
+    this.fc = new PF_FollowCamera();
+
     // 1. Call parent object
     GPT_Scene.call(this, GPT_Common.SCENE_NAME_3DPORTFOLIO);
 }
@@ -34,22 +35,17 @@ PF_Scene.prototype.constructor = PF_Scene;
  * (Overriden method)
  */
 PF_Scene.prototype.get_cam = function () {
-    const _cam = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
-    _cam.position.set(0, 275, -700); // consider we are working in mm
-    _cam.lookAt(new THREE.Vector3(0, 80, 0)); // looking at the origin
-    return _cam;
+    this.fc.config_cam();
+    return this.fc.cam;
 }
 
 /**
  * Creates a THREE.OrbitControls with by default values (orbit control)
  * (Overriden method)
  */
-PF_Scene.prototype.get_cam_handler = function (cam_, dom_element_) {
-    // const _cam_handler = new THREE.OrbitControls(cam_, dom_element_);
-    const _cam_handler = new OrbitControls(cam_, dom_element_);
-    _cam_handler.target.set(0, 100, 0);
-    _cam_handler.noKeys = true; // moving with keyboard not allowed
-    return _cam_handler;
+PF_Scene.prototype.get_cam_handler = function (cam_, webgl_dom_element_) {
+    this.fc.config_cam_handler(cam_, webgl_dom_element_);
+    return this.fc.cam_handler;
 }
 
 /**
@@ -199,7 +195,7 @@ PF_Scene.prototype.createLights = function () {
 
     lFocal.castShadow = true;
     lFocal.shadow.camera.near = 5;
-    lFocal.shadow.camera.far = 1000;
+    lFocal.shadow.camera.far = lFocal.distance;
     lFocal.shadow.camera.fov = 45; // degrees
     lFocal.shadow.camera.visible = true;
 
