@@ -5,6 +5,7 @@
 
 import THREE from '../external-libs/three-global'
 import GPT_Scene from '../core/GPT_Scene'
+import GPT_Common from '../core/GPT_Common'
 import ModelDragon from './ModelDragon'
 import Common from './Common'
 import ModelSkybox from './ModelSkybox'
@@ -13,6 +14,8 @@ import ModelTrajectory from './ModelTrajectory'
 import InputManager from './InputManager'
 import FSM_Robot, { R_Events } from './FSM_Robot'
 import ModelBullet from './ModelBullet'
+// import OrbitControls from './external-libs/OrbitControls' // using our custom import
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -20,7 +23,7 @@ import ModelBullet from './ModelBullet'
  */
 function SceneDragon() {
     // 1. Call parent object
-    GPT_Scene.call(this);
+    GPT_Scene.call(this, GPT_Common.SCENE_NAME_DRAGON);
 }
 
 // 2. Extend from parent object prototype (keeps the proto clean)
@@ -28,6 +31,29 @@ SceneDragon.prototype = Object.create(GPT_Scene.prototype);
 
 // 3. Repair the inherited constructor
 SceneDragon.prototype.constructor = SceneDragon;
+
+/**
+ * Creates a THREE.Camera with by default values (perspective camera)
+ * (Overriden method)
+ */
+SceneDragon.prototype.get_cam = function () {
+    const _cam = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+    _cam.position.set(0, 275, 700); // consider we are working in mm
+    _cam.lookAt(new THREE.Vector3(0, 80, 0)); // looking at the origin
+    return _cam;
+}
+
+/**
+ * Creates a THREE.OrbitControls with by default values (orbit control)
+ * (Overriden method)
+ */
+SceneDragon.prototype.get_cam_handler = function (cam_, dom_element_) {
+    // const _cam_handler = new THREE.OrbitControls(cam_, dom_element_);
+    const _cam_handler = new OrbitControls(cam_, dom_element_);
+    _cam_handler.target.set(0, 100, 0);
+    _cam_handler.noKeys = true; // moving with keyboard not allowed
+    return _cam_handler;
+}
 
 /**
  * Overrides createObjects funtion in child object
