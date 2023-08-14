@@ -15,13 +15,15 @@ class PF_ModelDrone {
      * @param {THREE.Scene} webgl_scene neede to attach / deattach properllers at runtime
      * @param {Array[THREE.Vector3]} fpath_curve_points list of flight path points (Vector3)
      *  that form the curve to move the drone along
+     * @private `this.drone_obj` will be retrieved at `setup_drone_and_propellers` after
+     *  the drone-model is fully loaded
      */
     constructor(on_loaded_external_cb, webgl_scene, fpath_curve_points){
         this.on_loaded_external_cb = on_loaded_external_cb;
         this.scene = webgl_scene;
         this.fpath_curve = fpath_curve_points;
 
-        this.drone_obj = undefined;
+        this.drone_obj = undefined
         this.fl = undefined; // front left
         this.fr = undefined; // front right
         this.rl = undefined; // rear left
