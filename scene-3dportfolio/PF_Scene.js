@@ -1,6 +1,6 @@
 /**
  * @module libgptjs Graphical Programming with ThreeJS (GPT)
- * @class Scene3DPortfolio
+ * @class PF_Scene
  */
 
 import * as THREE from 'three'

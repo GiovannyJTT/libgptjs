@@ -1,6 +1,6 @@
 /**
  * @module libgptjs Graphical Programming with ThreeJS (GPT)
- * @class PF_ModelTrajectory
+ * @class PF_ModelFlightPath
  */
 
 import * as THREE from "three"
