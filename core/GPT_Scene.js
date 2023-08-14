@@ -37,10 +37,11 @@ GPT_Scene.prototype.get_cam = function () {
 /**
  * Override this method for creating camera handler (ex: OrbitControls, FollowCam), its initial position, etc.
  * It is needed at `GPT_Renderer`: `setup, update, reshape`
- * @param {THREE.Camera} cam_ camera commonly perspective
- * @param {Object} cam_handler object that controls the camera depending on user interacion (ex: OrbitControlls, FollowCam) which have an `update` method
+ * @param {THREE.Camera} cam_ camera commonly perspective to be controlled
+ * @param {Object} webgl_dom_element_ webgl dom element from which the events (keys, touch, buttons) will be retrived
+ * @returns {Object} object that controls / moves the camera depending on user interacion (ex: OrbitControlls, FollowCam) which have an `update` method
  */
-GPT_Scene.prototype.get_cam_handler = function (cam_, dom_element_) {
+GPT_Scene.prototype.get_cam_handler = function (cam_, webgl_dom_element_) {
     console.error("GPT_Scene.get_cam_handler: Not implemented");
 }
 
