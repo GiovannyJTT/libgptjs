@@ -26,6 +26,25 @@ function GPT_Scene(scene_name_) {
 }
 
 /**
+ * Override this method for creating camera, its initial position, etc.
+ * It is needed at `GPT_Renderer`: `setup, update, reshape`
+ * @returns {THREE.Camera} cam_ camera commonly perspective
+ */
+GPT_Scene.prototype.get_cam = function () {
+    console.error("GPT_Scene.get_cam: Not implemented");
+}
+
+/**
+ * Override this method for creating camera handler (ex: OrbitControls, FollowCam), its initial position, etc.
+ * It is needed at `GPT_Renderer`: `setup, update, reshape`
+ * @param {THREE.Camera} cam_ camera commonly perspective
+ * @param {Object} cam_handler object that controls the camera depending on user interacion (ex: OrbitControlls, FollowCam) which have an `update` method
+ */
+GPT_Scene.prototype.get_cam_handler = function (cam_, dom_element_) {
+    console.error("GPT_Scene.get_cam_handler: Not implemented");
+}
+
+/**
  * Override this method for creating models with their corresponding meshes, and their initial positions in the scene.
  * Then add each model in the models array
  */
