@@ -5,10 +5,13 @@
 
 import * as THREE from 'three'
 import GPT_Scene from '../core/GPT_Scene'
+import GPT_Common from '../core/GPT_Common'
 import PF_Common from './PF_Common'
 import PF_ModelSkybox from './PF_ModelSkybox'
 import PF_ModelDrone from './PF_ModelDrone'
 import PF_ModelFlightPath from './PF_ModelFlightPath'
+// import OrbitControls from './external-libs/OrbitControls' // using our custom import
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -17,7 +20,7 @@ import PF_ModelFlightPath from './PF_ModelFlightPath'
  */
 function PF_Scene() {
     // 1. Call parent object
-    GPT_Scene.call(this);
+    GPT_Scene.call(this, GPT_Common.SCENE_NAME_3DPORTFOLIO);
 }
 
 // 2. Extend from parent object prototype (keeps the proto clean)
@@ -25,6 +28,29 @@ PF_Scene.prototype = Object.create(GPT_Scene.prototype);
 
 // 3. Repair the inherited constructor
 PF_Scene.prototype.constructor = PF_Scene;
+
+/**
+ * Creates a THREE.Camera with by default values (perspective camera)
+ * (Overriden method)
+ */
+PF_Scene.prototype.get_cam = function () {
+    const _cam = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+    _cam.position.set(0, 275, -700); // consider we are working in mm
+    _cam.lookAt(new THREE.Vector3(0, 80, 0)); // looking at the origin
+    return _cam;
+}
+
+/**
+ * Creates a THREE.OrbitControls with by default values (orbit control)
+ * (Overriden method)
+ */
+PF_Scene.prototype.get_cam_handler = function (cam_, dom_element_) {
+    // const _cam_handler = new THREE.OrbitControls(cam_, dom_element_);
+    const _cam_handler = new OrbitControls(cam_, dom_element_);
+    _cam_handler.target.set(0, 100, 0);
+    _cam_handler.noKeys = true; // moving with keyboard not allowed
+    return _cam_handler;
+}
 
 /**
  * Overrides createObjects funtion in child object
@@ -103,14 +129,12 @@ PF_Scene.prototype.createFlightPath = function () {
  */
 PF_Scene.prototype.createDrone = function () {
     
-    const _on_loaded_ok = function (object_) {
-        this.drone = object_;
-
-        // drone object is a 3DObjec-group
-        console.debug(this.drone);
+    const _on_loaded_ok = function (drone_obj_) {
+        // drone object is a 3DObject-group
+        console.debug(drone_obj_);
 
         // add drone.mesh at runtime not setup
-        this.AddModelToScene("drone", this.drone);
+        this.AddModelToScene("drone", drone_obj_);
 
     }.bind(this);
 
