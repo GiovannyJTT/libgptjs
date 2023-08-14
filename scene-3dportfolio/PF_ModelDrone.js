@@ -96,6 +96,9 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     this.drone_obj.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.drone_obj.position.set(this.fpath_curve[0].x, this.fpath_curve[0].y, this.fpath_curve[0].z);
 
+    // enable casting shadows on the floor
+    this.drone_obj.traverse(function(child){child.castShadow = true;});
+
     // get propellers Object3D
     this.fl = this.drone_obj.getObjectByName("mesh1326258638");
     this.fr = this.drone_obj.getObjectByName("mesh1301670615");
