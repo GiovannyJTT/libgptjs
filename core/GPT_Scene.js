@@ -17,11 +17,12 @@ import THREE from '../external-libs/three-global'
  * Using a map it preserves the original insertion order, has merging functionalities and better performance
  * when adding/removing operations are performed frequently
  */
-function GPT_Scene() {
+function GPT_Scene(scene_name_) {
     // maps can have any object type as key and can be iterated in order of insertion
     this.gpt_models = new Map();
     this.gpt_lights = new Map();
     this.scene = new THREE.Scene();
+    this.scene.name = scene_name_
 }
 
 /**
