@@ -10,10 +10,6 @@
  */
 import THREE from '../external-libs/three-global'
 
-// using our custom import
-// import OrbitControls from './external-libs/OrbitControls'
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
-
 /**
  * Create a GPT Renderer object with a scene already configured. It creates a THREE.WebGLRenderer internally tha twill be used in the other metho
  * @param {Number} w width of the canvas
@@ -33,25 +29,6 @@ function GPT_Renderer(w, h, sce) {
 }
 
 /**
- * Creates a THREE.Camera with by default values (perspective camera)
- */
-GPT_Renderer.prototype.setCameraForDragon = function () {
-    this.camera = new THREE.PerspectiveCamera(75, this.w / this.h, 0.1, 5000);
-    this.camera.position.set(0, 275, 700); // consider we are working in cm
-    this.camera.lookAt(new THREE.Vector3(0, 80, 0)); // looking at the origin
-}
-
-/**
- * Creates a THREE.Controls with by default values (orbit control)
- */
-GPT_Renderer.prototype.setCameraHandler = function () {
-    // this.cameraHandler = new THREE.OrbitControls(this.camera, this.wglrenderer.domElement);
-    this.cameraHandler = new OrbitControls(this.camera, this.wglrenderer.domElement);
-    this.cameraHandler.target.set(0, 100, 0);
-    this.cameraHandler.noKeys = true; // moving with keyboard not allowed
-}
-
-/**
  * Initilize the Scene and WebGL here. This is called only once at the beginning
  * @param {string} div_container_name name of the div element for using as canvas. Commonly "container"
  */
@@ -63,9 +40,8 @@ GPT_Renderer.prototype.setup = function (div_container_name) {
     document.getElementById(div_container_name).appendChild(this.wglrenderer.domElement);
     console.info("GPT_Renderer.wglrenderer configured: clearColor and shadowMapEnabled");
 
-    this.setCameraForDragon();
-    this.setCameraHandler();
-
+    this.camera = this.gpt_scene.get_cam();
+    this.cameraHandler = this.gpt_scene.get_cam_handler(this.camera, this.wglrenderer.domElement);
     this.gpt_scene.setupScene();
 }
 
