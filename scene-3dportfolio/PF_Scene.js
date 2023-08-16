@@ -18,10 +18,10 @@ import PF_FollowCamera from './PF_FollowCamera'
  * Renders several animations by using vertical scroll
  */
 function PF_Scene() {
-    this.fc = new PF_FollowCamera();
-
     // 1. Call parent object
     GPT_Scene.call(this, GPT_Common.SCENE_NAME_3DPORTFOLIO);
+
+    this.fc = new PF_FollowCamera();
 }
 
 // 2. Extend from parent object prototype (keeps the proto clean)
@@ -131,6 +131,9 @@ PF_Scene.prototype.createDrone = function () {
 
         // add drone.mesh at runtime not setup
         this.AddModelToScene("drone", drone_obj_);
+
+        // set drone as target of the follow-camera
+        this.fc.set_target(drone_obj_);
 
     }.bind(this);
 
