@@ -162,10 +162,6 @@ PF_Scene.prototype.updateDrone = function (ms) {
  * for better understanding of where are located the light sources.
  */
 PF_Scene.prototype.createLights = function () {
-    // 5% white light (almost black), doesnt need position. Ambient-Light: is added when shading the models surfaces
-    const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 1.0);
-    this.gpt_lights.set("lAmbient", lAmbient);
-
     /*
     // 75% white light. Point-Light: emits in all directions
     const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 1.0);
@@ -175,43 +171,53 @@ PF_Scene.prototype.createLights = function () {
     const lPointHelper = new THREE.PointLightHelper(lPoint, 10);
     this.gpt_lights.set("lPointHelper", lPointHelper);
     */
+
+    // Ambient-Light: is added when shading the models surfaces. 5% white light (almost black), doesnt need position.
+    const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 1.0);
+    this.gpt_lights.set("lAmbient", lAmbient);
    
-    // 75% white light. Directional-Light: emits only in the configured direction vector
+    // Directional-Light: emits only in the configured direction vector. 75% white light.
     const lDirectional = new THREE.DirectionalLight(new THREE.Color(0xbfbfbf), 1.0);
 
-    // direction of the lighting vector
+    // NOTE: direction of the lighting vector is matched witht he skybox-sun position
     lDirectional.position.set(75, 200, 200);
     this.gpt_lights.set("lDirectional", lDirectional);
 
     const lDirectionalHelper = new THREE.DirectionalLightHelper(lDirectional, 10);
     this.gpt_lights.set("lDirectionalHelper", lDirectionalHelper);
 
-    // 75% white light. Focal-Light: emits light with "cone" volume
-    const lFocal = new THREE.SpotLight(new THREE.Color(0xbfbfbf));
-    lFocal.position.set(200, 330, -300);
+    for (let i=0; i < PF_Common.FPATH_WPS.length; i++) {
+        const _wp = PF_Common.FPATH_WPS[i]["coords"];
+        const _drone_side = PF_Common.DRONE_BOUNDING_BOX_SIDE; 
+        const _light_height = 2 * _drone_side;
 
-    // direction of the central lighting vector
-    lFocal.target.position.set(0, 0, 0);
+        // Focal-Light: emits light with "cone" volume, 75% white light
+        const lFocal = new THREE.SpotLight(new THREE.Color(0xbfbfbf));
+        lFocal.position.set(_wp.x + _drone_side, _light_height, _wp.y);
 
-    lFocal.angle = Math.PI / 8; // radians
-    lFocal.distance = 1000;
+        // direction of the central lighting vector
+        lFocal.target.position.set(_wp.x, 0, _wp.y);
+        lFocal.angle = Math.PI / 8; // radians
+        lFocal.distance = 3 * _light_height;
 
-    lFocal.castShadow = true;
-    lFocal.shadow.camera.near = 5;
-    lFocal.shadow.camera.far = lFocal.distance;
-    lFocal.shadow.camera.fov = 45; // degrees
-    lFocal.shadow.camera.visible = true;
+        // intensity 10 is ok for distance 1000
+        lFocal.intensity = 50;
+        // atenuation from the central vector to the borders of the cone
+        lFocal.decay = 10;
 
-    // intensity 10 is ok for distance 1000
-    lFocal.intensity = 10;
+        // shadow config
+        lFocal.shadow.camera.near = 5;
+        lFocal.shadow.camera.far = lFocal.distance;
+        lFocal.shadow.camera.fov = 45; // degrees
+        lFocal.shadow.camera.visible = true;
+        lFocal.castShadow = true;
 
-    // atenuation from the central vector to the borders of the cone
-    lFocal.decay = 7.5;
+        this.gpt_lights.set("lFocal_" + i, lFocal);
 
-    this.gpt_lights.set("lFocal", lFocal);
-
-    const lFocalHelper = new THREE.SpotLightHelper(lFocal);
-    this.gpt_lights.set("lFocalHelper", lFocalHelper);
+        // Focal-Light-Helper
+        const lFocalHelper = new THREE.SpotLightHelper(lFocal);
+        this.gpt_lights.set("lFocalHelper_" + i, lFocalHelper);
+    }
 }
 
 /**
