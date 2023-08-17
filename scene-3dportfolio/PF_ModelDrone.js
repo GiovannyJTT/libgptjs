@@ -313,16 +313,14 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
 }
 
 /**
- * WARNING: Run this function after `move_to_next_point_interpolated()` to update timestamps and `this.fp_index`
- * (here they are readed but not written)
- * 
- * Applies a rotation to the drone by making it `lookAt` an interpolated position between 2 points3D
- * 
- * Note: when two points3D are vertically aligned `THREE.Object3D.lookAt()` can flip the object
- *  because of gimbal-lock
- * 
+ * - WARNING: Run this function after `move_to_next_point_interpolated()` to update `timestamps` and `this.fp_index`
+ * (those values are used in here)
+ * - Applies a rotation to the drone in order to make it `lookAt` an interpolated position between 2 points3D
+ * (the next and second next spline curve points)
+ * - Pointing towards an interpolated point makes the rotation smoother
+ * - Note: when two points3D of the spline curve are vertically aligned, the`THREE.Object3D.lookAt()` can keep
+ * flipping the object suddenly because of gimbal-lock.
  * @param {THREE.Vector3} _lookAt_index will be computed every frame as `this.fp_index + 1`
- *  so the drone will keep most of time horizontal
  * @returns {boolean} true when rotated properly, false otherwise
  */
 PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
@@ -352,6 +350,9 @@ PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
 
         // apply rotation to point drone-nose to target-point
         this.drone_obj.lookAt(_la_x, _la_y, _la_z);
+        // point-drone-nose forward
+        this.drone_obj.rotateY(Math.PI);
+
         return true;
     }
     else {
