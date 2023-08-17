@@ -320,7 +320,8 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
  * - Pointing towards an interpolated point makes the rotation smoother
  * - Note: when two points3D of the spline curve are vertically aligned, the`THREE.Object3D.lookAt()` can keep
  * flipping the object suddenly because of gimbal-lock.
- * @param {THREE.Vector3} _lookAt_index will be computed every frame as `this.fp_index + 1`
+ * @property {THREE.Vector3} `_lookAt_index` will be computed every frame as `this.fp_index + 1`
+ * @property {THREE.Vector3} `this.fp_index` is set outside at `move_to_next_point_interpolated()`
  * @returns {boolean} true when rotated properly, false otherwise
  */
 PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
