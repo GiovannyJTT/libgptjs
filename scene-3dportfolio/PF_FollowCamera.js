@@ -12,18 +12,19 @@ class PF_FollowCamera {
      * @property {THREE.Object3D} `target_obj` object to be followed. It will be set at `set_target()` once the model is fully loaded
      * @property {THREE.Camera} `cam` camera that will be moved
      * @property {PF_FollowCamera} `cam_handler` Object that will control the movement of the camera
-     * @property {Float} `radial_dist` distance to keep between camera and target_obj
      * @property {THREE.Vector3} `goal_point` position where the camera has to move in order follow the `target_obj`, pointing in the same `direction`
      * taking into accoun the current rotation of the target_obj and keep the `radial_dist`
-     * @property {Float} `i_pos` interpolation factor to update the camera-position every frame
+     * @property {Float} `radial_dist` (default 150) distance to keep between camera and target_obj
+     * @property {Float} `i_pos` (default 0.05) interpolation factor in range `[0.0, 1.0]` to update the camera-position every frame.
+     * The `update()` method of this class is commonly calle at 60 fps, so the value of `i_pos` is to make the camera to rotate smoothly
      */
     constructor () {
         this.target_obj = undefined;
         this.cam = undefined;
         this.cam_handler = undefined;        
-        this.radial_dist = 200;
         this.goal_point = new THREE.Vector3();
-        this.i_pos = 0.1;
+        this.radial_dist = 150;
+        this.i_pos = 0.05;
     }
 };
 
@@ -32,7 +33,7 @@ class PF_FollowCamera {
  */
 PF_FollowCamera.prototype.config_cam = function () {
     this.cam = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
-    this.cam.position.set(0, 275, 0); // consider we are working in mm
+    this.cam.position.set(0, 0, 1); // consider we are working in mm
     this.cam.lookAt(new THREE.Vector3(0, 0, 0)); // looking at the origin
 };
 
@@ -52,38 +53,31 @@ PF_FollowCamera.prototype.set_target = function (target_obj_) {
     this.target_obj = target_obj_;
 }
 
+/**
+ * 1. Calculates the `point-behind` the `target_obj` in the Z axis (in local-space)
+ * 2. Rotates the `point-behind` to align with the current rotation of the `target_obj` (in local-space)
+ * 3. Calculates `this.goal_point` by translating the `point-behind` to the `target_obj` coordinates in world-space
+ * 4. Sets camera position as `this.goal_point` (`point-behind`) (interpolated)
+ * 5. Rotates camera to point towards the current position of `target_obj`
+ */
 PF_FollowCamera.prototype.update = function () {
+    if (undefined !== this.target_obj) {        
 
-    if (undefined !== this.target_obj) {
-        // directional vector (what direction is the object moving towards)
-        const _yaw = this.target_obj.rotation.y;
-        const _pitch = this.target_obj.rotation.x;
+        const _behind = new THREE.Vector3(0, 0, 1)
+            .multiplyScalar(this.radial_dist) // 1.
+            .applyEuler(this.target_obj.rotation) // 2.
 
-        const sin_pitch = Math.sin(_pitch);
-        const cos_pitch = Math.cos(_pitch);
-        const cos_yaw = Math.cos(_yaw);
-
-        const _dir = new THREE.Vector3(
-            Math.sin(_yaw),
-            -(sin_pitch * cos_yaw),
-            -(cos_pitch * cos_yaw),
-        )
-
-        // calculate pos behind the target_obj based on current rotation the target
         this.goal_point = new THREE.Vector3().copy(this.target_obj.position)
-            .sub(
-                _dir.multiplyScalar(this.radial_dist)
-            );
+            .add(_behind); // 3.
 
-        // clapm values to avoid pointing towards the sky and go to close to the obj
-        this.goal_point.y = (this.goal_point.y < this.target_obj.position.y) ? this.target_obj.position.y : this.goal_point.y; 
+        // 4. update camera position (inerpolated)
+        const _ix = lerp(this.cam.position.x, this.goal_point.x, this.i_pos);
+        const _iy = lerp(this.cam.position.y, this.goal_point.y, this.i_pos);
+        const _iz = lerp(this.cam.position.z, this.goal_point.z, this.i_pos);
+        this.cam.position.set(_ix, _iy, _iz);
 
-        // update camera positioon
-        // TODO: use interpolation to smooth the movement
-        this.cam.position.set(this.goal_point.x, this.goal_point.y, this.goal_point.z);
-
-        // update camera rotation (point camera towards the target_obj)
-        this.cam.lookAt(this.target_obj.position);
+        // 5. update camera rotation
+        this.cam.lookAt(this.target_obj.position); 
     }
 }
 
