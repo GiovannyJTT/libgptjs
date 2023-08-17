@@ -13,7 +13,7 @@ class PF_ModelFlightPath {
         this.waypoints = this.get_waypoints();
         this.spline_points3D = undefined;
 
-        // 2. call parent class constructor (in order to construct geometry and mesh)
+        // 2. Call parent class constructor (in order to construct geometry and material)
         GPT_Model.call(this);
 
         // 3. Pass the geometry and material constructed to create line-mesh
