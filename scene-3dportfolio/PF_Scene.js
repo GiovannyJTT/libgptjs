@@ -188,22 +188,23 @@ PF_Scene.prototype.createLights = function () {
 
     for (let i=0; i < PF_Common.FPATH_WPS.length; i++) {
         const _wp = PF_Common.FPATH_WPS[i]["coords"];
-        const _drone_side = PF_Common.DRONE_BOUNDING_BOX_SIDE; 
-        const _light_height = 2 * _drone_side;
 
         // Focal-Light: emits light with "cone" volume, 75% white light
         const lFocal = new THREE.SpotLight(new THREE.Color(0xbfbfbf));
-        lFocal.position.set(_wp.x + _drone_side, _light_height, _wp.y);
+        lFocal.position.set(
+            _wp.x + (2 * PF_Common.DRONE_BOUNDING_BOX_SIDE),
+            PF_Common.FPATH_WPS_LIGHT_HEIGHT,
+            _wp.y);
 
         // direction of the central lighting vector
         lFocal.target.position.set(_wp.x, 0, _wp.y);
-        lFocal.angle = Math.PI / 8; // radians
-        lFocal.distance = 3 * _light_height;
+        lFocal.angle = Math.PI / 12; // radians
+        lFocal.distance = 3 * PF_Common.FPATH_WPS_LIGHT_HEIGHT;
 
-        // intensity 10 is ok for distance 1000
+        // intensity 50 and decay are related
         lFocal.intensity = 50;
         // atenuation from the central vector to the borders of the cone
-        lFocal.decay = 10;
+        lFocal.decay = 11;
 
         // shadow config
         lFocal.shadow.camera.near = 5;

@@ -37,16 +37,21 @@ const CANVAS_CONTAINER_HEIGHT = posInfo.height;
 
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
 const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
-const DRONE_SCALE = 75
-const DRONE_PROPELLERS_DISPLACEMENT_XZ = 16.25
-const DRONE_PROPELLERS_DISPLACEMENT_Y = 9.25
-const DRONE_BOUNDING_BOX_SIDE = 44
+
+// drone config
+const DRONE_SCALE = 56.25
+// displacement depens on scale
+const DRONE_PROPELLERS_DISPLACEMENT_XZ = 12.1875
+const DRONE_PROPELLERS_DISPLACEMENT_Y = 6.9375
+const DRONE_BOUNDING_BOX_SIDE = 33
+
+// drone propellers
 const DRONE_PROPELERS_ROT_DEGREES = 20
 const DRONE_PROPELERS_ROT_CW = DRONE_PROPELERS_ROT_DEGREES * Math.PI / 180.0 // RADS
 const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW
 const DRONE_ROT_X_MAX = 3 * Math.PI / 180.0
 const DRONE_ROT_X_MIN = -DRONE_ROT_X_MAX
-const DRONE_ROT_Y_STEP = DRONE_ROT_X_MAX / 20.0
+const DRONE_ROT_X_STEP = DRONE_ROT_X_MAX / 20.0
 
 let increasing = true
 
@@ -60,7 +65,7 @@ let increasing = true
 function get_drone_rot_x_pingpong (current) {
     if (increasing) {
         if (current < DRONE_ROT_X_MAX) {
-            return current + DRONE_ROT_Y_STEP;
+            return current + DRONE_ROT_X_STEP;
         }
         else {
             increasing = false;
@@ -69,7 +74,7 @@ function get_drone_rot_x_pingpong (current) {
     }
     else {
         if (current > DRONE_ROT_X_MIN) {
-            return current - DRONE_ROT_Y_STEP;
+            return current - DRONE_ROT_X_STEP;
         }
         else {
             increasing = true;
@@ -117,6 +122,7 @@ const IMG_MAP_COORDS_HELSINKI = {x: 1518, y: 460}
 const IMG_MAP_COORDS_ODENSE = {x: 972, y: 720}
 const IMG_MAP_COORDS_OSLO = {x: 980, y: 475}
 
+// waypoints (locations on the map)
 const FPATH_WP_VALENCIA = imgcoords_to_worldspace(IMG_MAP_COORDS_VALENCIA);
 const FPATH_WP_HELSINKI = imgcoords_to_worldspace(IMG_MAP_COORDS_HELSINKI);
 const FPATH_WP_ODENSE = imgcoords_to_worldspace(IMG_MAP_COORDS_ODENSE);
@@ -143,13 +149,15 @@ const FPATH_WPS = [
     {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July"},
     {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-November"}
 ]
+const FPATH_WPS_LIGHT_HEIGHT = DRONE_BOUNDING_BOX_SIDE * 3
 
+// Flight path spline config
+const FPATH_MIN_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE / 2.0
+const FPATH_MAX_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE * 4
 // Configure spline curve based on num locations
 const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
 const FPATH_SPLINE_NUM_SEGMENTS_PER_WP = FPATH_SPLINE_NUM_SEGMENTS / FPATH_WPS.length
 const FPATH_STEP_DURATION_MS = FPATH_SPLINE_NUM_SEGMENTS * 10 // 10 ms per segment
-const FPATH_MIN_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE / 2.0
-const FPATH_MAX_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE * 3
 
 export default {
     FLOOR_WIDTH,
@@ -164,6 +172,7 @@ export default {
     DRONE_OBJ_PATH,
     DRONE_MTL_PATH,
     DRONE_SCALE,
+    DRONE_BOUNDING_BOX_SIDE,
     DRONE_PROPELLERS_DISPLACEMENT_XZ,
     DRONE_PROPELLERS_DISPLACEMENT_Y,
     DRONE_PROPELERS_ROT_CW,
@@ -175,5 +184,6 @@ export default {
     FPATH_STEP_DURATION_MS,
     FPATH_MIN_HEIGHT_MM,
     FPATH_MAX_HEIGHT_MM,
-    FPATH_WPS
+    FPATH_WPS,
+    FPATH_WPS_LIGHT_HEIGHT
 }
