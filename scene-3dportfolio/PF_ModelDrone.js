@@ -9,6 +9,24 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from "three"
 import { lerp } from "three/src/math/MathUtils";
 
+/**
+ * States that the "drone movement" can have.
+ * Object.freeze makes Enum objects to be immutable.
+ * Symbol makes objects Enum objecst to be unique.
+ */
+const PF_MoveDrone = Object.freeze(
+    {
+        // Flying and stying at the same position (propellers rotating)
+        HOVERING: Symbol("hovering"),
+
+        // Moving fordward to the next point (pointing drone-nose to it)
+        FORWARD: Symbol("loading_bullet"),
+
+        // Moving backward to the previous point (pointing drone-back to it, not nose)
+        BACKWARD: Symbol("bullet_traveling"),
+    }
+);
+
 class PF_ModelDrone {
     /**
      * @param {Function} on_loaded_external_cb callback to be run when model fully loaded
@@ -29,9 +47,59 @@ class PF_ModelDrone {
         this.rl = undefined; // rear left
         this.rr = undefined; // rear right
 
+        this.init_move();
         this.load_mat();
     }
 };
+
+/**
+ * - Initilizes drone move direction
+ * - Installs callbacks for events of move-forward (ex: "ArrowUp"), move-backward (ex: "ArrowDown"),
+ * hovering (ex: "Space")
+ * - Transition: `Forward -> Backward` or `Backward -> Forward`: it updates the `prevTS` timestamps and the `this.fp_index`
+ * to avoid jumps into the position
+ * - Transition: `Forward -> Hovering` or `Backward -> Hovering`: it saves the reimaining time and the move-direction it was using
+ * - Transition: `Hovering -> Forward` or `Hovering -> Backward`: it will used the saved values to compute new timestamps properly
+ * - TODO: use vertical scroller events
+ */
+PF_ModelDrone.prototype.init_move = function () {
+    this.fp_index = 0;
+    this.move_dir = PF_MoveDrone.HOVERING;
+    this.elapsed_forward = undefined;
+    this.elapsed_backward = undefined;
+    this.remain_forward = undefined;
+    this.remain_backward = undefined;
+
+    document.addEventListener("keydown",
+        function (event_) {
+            switch(event_.code) {
+                case "ArrowUp":
+                    // direction changed
+                    if (PF_MoveDrone.BACKWARD == this.move_dir) {
+                        this.remain_backward = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_backward;
+                        this.prevTS_forward = performance.now() - this.remain_backward;
+                        // update index to reverse direction
+                        this.fp_index -= 1;
+                    }
+                    this.move_dir = PF_MoveDrone.FORWARD;
+                    break;
+                case "ArrowDown":
+                    // direction changed
+                    if (PF_MoveDrone.FORWARD == this.move_dir) {
+                        this.remain_forward = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_forward;
+                        this.prevTS_backward = performance.now() - this.remain_forward;
+                        // update index to reverse direction
+                        this.fp_index += 1;
+                    }
+                    this.move_dir = PF_MoveDrone.BACKWARD;
+                    break;
+                case "Space":
+                    this.move_dir = PF_MoveDrone.HOVERING;
+                    break;
+            }
+        }.bind(this)
+    );
+}
 
 PF_ModelDrone.prototype.load_mat = function () {
     // 1. materials first
@@ -124,10 +192,6 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     this.rl.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.rr.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
     this.recenter_propellers();
-
-    // initialization
-    this.fp_index = 0;
-    this.prevTS_pos = performance.now();
 };
 
 /**
@@ -276,7 +340,7 @@ PF_ModelDrone.prototype.propellers_to_drone_WS = function () {
     this.rr.position.z += this.drone_obj.position.z
 }
 
-PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
+PF_ModelDrone.prototype.move_to_forward_point_interpolated = function (ms) {
     if (this.drone_obj === undefined) {
         return false;
     }
@@ -287,11 +351,11 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
     }
 
     const _nowTS = performance.now();
-    const _elapsed = _nowTS - this.prevTS_pos;
+    this.elapsed_forward = _nowTS - this.prevTS_forward;
     
-    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {        
+    if (this.elapsed_forward < PF_Common.FPATH_STEP_DURATION_MS) {        
         // interpolation factor (current part of the interval based on elapsed time)
-        const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_forward / PF_Common.FPATH_STEP_DURATION_MS;
         // current point3D
         const _p = this.fpath_curve[this.fp_index];
         // next point3D
@@ -307,7 +371,7 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
     }
     else {
         this.fp_index++;
-        this.prevTS_pos = performance.now();
+        this.prevTS_forward = performance.now();
         return false;
     }
 }
@@ -324,7 +388,7 @@ PF_ModelDrone.prototype.move_to_next_point_interpolated = function (ms) {
  * @property {THREE.Vector3} `this.fp_index` is set outside at `move_to_next_point_interpolated()`
  * @returns {boolean} true when rotated properly, false otherwise
  */
-PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
+PF_ModelDrone.prototype.point_nose_to_forward_point_interpolated = function (ms) {
     if (this.drone_obj === undefined) {
         return false;
     }
@@ -336,28 +400,134 @@ PF_ModelDrone.prototype.point_nose_to_next_point_interpolated = function (ms) {
     }
 
     const _nowTS = performance.now();
-    const _elapsed = _nowTS - this.prevTS_pos;
+    this.elapsed_forward = _nowTS - this.prevTS_forward;
 
-    if (_elapsed < PF_Common.FPATH_STEP_DURATION_MS) {
+    if (this.elapsed_forward < PF_Common.FPATH_STEP_DURATION_MS) {
         // start_point (current target point)
         const _tp = this.fpath_curve[_lookAt_index];
         // end_point (next target point)
         const _tp_next = this.fpath_curve[_lookAt_index + 1];
         // lookAt_point (interpolated point between current and next target point based on time elapsed)
-        const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_forward / PF_Common.FPATH_STEP_DURATION_MS;
         const _la_x = lerp(_tp.x, _tp_next.x, _i);
         const _la_y = lerp(_tp.y, _tp_next.y, _i);
         const _la_z = lerp(_tp.z, _tp_next.z, _i);
 
         // apply rotation to point drone-nose to target-point
         this.drone_obj.lookAt(_la_x, _la_y, _la_z);
-        // point-drone-nose forward
+        // fix rotation
         this.drone_obj.rotateY(Math.PI);
 
         return true;
     }
     else {
         return false;
+    }
+}
+
+/**
+ * 1. Moves the drone to the previous point using interpolation between current and previous in the curve
+ * 2. NOTE: Current `this.fp_index` is `updated` as `this.fp_index = this.fp_index + 1` at `keydown_event` to avoid jumps in the position
+ * since now we are moving backwards
+ * @param {Float} ms milliseconds passed since last frame
+ * @returns {boolean} true when moved properly, false otherwise
+ */
+PF_ModelDrone.prototype.move_to_backward_point_interpolated = function (ms) {
+    if (this.drone_obj === undefined) {
+        return false;
+    }
+
+    const _last_index = 0;
+    if (this.fp_index <= _last_index) {
+        return false;
+    }
+
+    const _nowTS = performance.now();
+    this.elapsed_backward = _nowTS - this.prevTS_backward;
+    
+    if (this.elapsed_backward < PF_Common.FPATH_STEP_DURATION_MS) {
+        // interpolation factor (current part of the interval based on elapsed time)
+        const _i = this.elapsed_backward / PF_Common.FPATH_STEP_DURATION_MS;
+        // current point3D
+        const _p = this.fpath_curve[this.fp_index];
+        // prev point3D
+        const _p_prev = this.fpath_curve[this.fp_index - 1];
+        // interpolate coordinates between current and prev point
+        const _ip_x = lerp(_p.x, _p_prev.x, _i);
+        const _ip_y = lerp(_p.y, _p_prev.y, _i);
+        const _ip_z = lerp(_p.z, _p_prev.z, _i);
+
+        // apply
+        this.drone_obj.position.set(_ip_x, _ip_y, _ip_z);
+        return true;
+    }
+    else {
+        this.fp_index--;
+        this.prevTS_backward = performance.now();
+        return false;
+    }
+}
+
+/**
+ * - Updates the rotation of the drone to align with the direction is going
+ * - NOTE: It will not rotate around its axis, hence simulates reverse move as a car
+ * @param {Float} ms milliseconds passed since last frame
+ * @returns {boolean} true when rotated properly, false otherwise
+ */
+PF_ModelDrone.prototype.point_nose_to_backward_point_interpolated = function (ms) {
+    if (this.drone_obj === undefined) {
+        return false;
+    }
+    
+    const _lookAt_index = this.fp_index - 1;
+    const _last_index = 0;
+    if (_lookAt_index <= _last_index) {
+        return false;
+    }
+
+    const _nowTS = performance.now();
+    this.elapsed_backward = _nowTS - this.prevTS_backward;
+
+    if (this.elapsed_backward < PF_Common.FPATH_STEP_DURATION_MS) {
+        // start_point (current target point)
+        const _tp = this.fpath_curve[_lookAt_index];
+        // end_point (prev target point)
+        const _tp_prev = this.fpath_curve[_lookAt_index - 1];
+        // lookAt_point (interpolated point between current and next target point based on time elapsed)
+        const _i = this.elapsed_backward / PF_Common.FPATH_STEP_DURATION_MS;
+        const _la_x = lerp(_tp.x, _tp_prev.x, _i);
+        const _la_y = lerp(_tp.y, _tp_prev.y, _i);
+        const _la_z = lerp(_tp.z, _tp_prev.z, _i);
+
+        // apply rotation to point drone-nose to target-point
+        this.drone_obj.lookAt(_la_x, _la_y, _la_z);
+        // NOTE: not fix rotation so it will not rotate around its axis, hence simulates reverse move as a car
+        // this.drone_obj.rotateY(Math.PI);
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+/**
+ * - Moves the drone using interpolation between 2 points3D
+ * depending on the direction (`forward` or `backwards`)
+ * - When move direction is `hovering` it does nothing
+ * @param {Float} ms milliseconds passed since last frame
+ */
+PF_ModelDrone.prototype.move_interpolated = function (ms) {
+    if (PF_MoveDrone.HOVERING == this.move_dir){
+        // nothing
+    }
+    else if (PF_MoveDrone.FORWARD == this.move_dir){
+        this.move_to_forward_point_interpolated(ms);
+        this.point_nose_to_forward_point_interpolated(ms);
+    }
+    else if (PF_MoveDrone.BACKWARD == this.move_dir){
+        this.move_to_backward_point_interpolated(ms);
+        this.point_nose_to_backward_point_interpolated(ms);
     }
 }
 

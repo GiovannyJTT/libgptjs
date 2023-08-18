@@ -152,8 +152,7 @@ PF_Scene.prototype.updateObjects = function (ms) {
 
 PF_Scene.prototype.updateDrone = function (ms) {
     this.m_drone.spin_propellers(ms);
-    this.m_drone.move_to_next_point_interpolated(ms);
-    this.m_drone.point_nose_to_next_point_interpolated(ms);
+    this.m_drone.move_interpolated(ms);
 }
 
 /**

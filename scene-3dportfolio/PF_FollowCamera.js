@@ -63,7 +63,7 @@ PF_FollowCamera.prototype.set_target = function (target_obj_) {
 PF_FollowCamera.prototype.update = function () {
     if (undefined !== this.target_obj) {        
 
-        const _behind = new THREE.Vector3(0, 0, 1)
+        const _behind = new THREE.Vector3(0.5, 0, 1)
             .multiplyScalar(this.radial_dist) // 1.
             .applyEuler(this.target_obj.rotation) // 2.
 
