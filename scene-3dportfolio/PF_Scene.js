@@ -157,9 +157,9 @@ PF_Scene.prototype.updateDrone = function (ms) {
 }
 
 /**
- * Overrides createLights function in child object
- * This function creates a light of each type (ambient, point, directional, focal) and adds helpers (wireframe representations)
- * for better understanding of where are located the light sources.
+ * 1. Creates an ambient-light and a directional-light, then adds visual-helpers
+ * (wireframe representations) for better understanding of where are located the light sources.
+ * 2. Creates a focal-light for each waypoint (location) on the 2D-map (floor)
  */
 PF_Scene.prototype.createLights = function () {
     /*
