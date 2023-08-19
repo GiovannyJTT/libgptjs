@@ -8,24 +8,8 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader"
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from "three"
 import { lerp } from "three/src/math/MathUtils";
-
-/**
- * States that the "drone movement" can have.
- * Object.freeze makes Enum objects to be immutable.
- * Symbol makes objects Enum objecst to be unique.
- */
-const PF_MoveDrone = Object.freeze(
-    {
-        // Flying and stying at the same position (propellers rotating)
-        HOVERING: Symbol("hovering"),
-
-        // Moving fordward to the next point (pointing drone-nose to it)
-        FORWARD: Symbol("loading_bullet"),
-
-        // Moving backward to the previous point (pointing drone-back to it, not nose)
-        BACKWARD: Symbol("bullet_traveling"),
-    }
-);
+import PF_MoveFSM from "./PF_MoveFSM";
+import { useDebugValue } from "react";
 
 class PF_ModelDrone {
     /**
@@ -47,7 +31,9 @@ class PF_ModelDrone {
         this.rl = undefined; // rear left
         this.rr = undefined; // rear right
 
-        this.init_move();
+        this.set_fsm();
+
+        // start loading the model.obj
         this.load_mat();
     }
 };
@@ -60,45 +46,94 @@ class PF_ModelDrone {
  * to avoid jumps into the position
  * - Transition: `Forward -> Hovering` or `Backward -> Hovering`: it saves the reimaining time and the move-direction it was using
  * - Transition: `Hovering -> Forward` or `Hovering -> Backward`: it will used the saved values to compute new timestamps properly
- * - TODO: use vertical scroller events
  */
-PF_ModelDrone.prototype.init_move = function () {
+PF_ModelDrone.prototype.set_fsm = function () {
     this.fp_index = 0;
-    this.move_dir = PF_MoveDrone.HOVERING;
-    this.elapsed_forward = undefined;
-    this.elapsed_backward = undefined;
-    this.remain_forward = undefined;
-    this.remain_backward = undefined;
 
-    document.addEventListener("keydown",
-        function (event_) {
-            switch(event_.code) {
-                case "ArrowUp":
-                    // direction changed
-                    if (PF_MoveDrone.BACKWARD == this.move_dir) {
-                        this.remain_backward = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_backward;
-                        this.prevTS_forward = performance.now() - this.remain_backward;
-                        // update index to reverse direction
-                        this.fp_index -= 1;
-                    }
-                    this.move_dir = PF_MoveDrone.FORWARD;
-                    break;
-                case "ArrowDown":
-                    // direction changed
-                    if (PF_MoveDrone.FORWARD == this.move_dir) {
-                        this.remain_forward = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_forward;
-                        this.prevTS_backward = performance.now() - this.remain_forward;
-                        // update index to reverse direction
-                        this.fp_index += 1;
-                    }
-                    this.move_dir = PF_MoveDrone.BACKWARD;
-                    break;
-                case "Space":
-                    this.move_dir = PF_MoveDrone.HOVERING;
-                    break;
-            }
-        }.bind(this)
-    );
+    const _cbs = {};
+    _cbs.on_hovering_to_forward = () => {
+        console.debug("on_hovering_to_forward");
+
+        // resume direction continues: fw, h, fw
+        if (undefined !== this.remain_FW_saved) {
+            this.prevTS_forward = performance.now() - this.remain_FW_saved;
+        }
+        // resume direction changes: bw, h, fw
+        else if (undefined !== this.remain_BW_saved) {
+            this.prevTS_forward = performance.now() - this.remain_BW_saved;
+
+            // update index to reverse direction and avoid jumps when updating position
+            this.fp_index--;
+
+            // clamp
+            const _limit_index = 0;
+            this.fp_index = this.fp_index <= _limit_index? _limit_index : this.fp_index;
+        }
+    };
+
+    _cbs.on_hovering_to_backward = () => {
+        console.debug("on_hovering_to_backward");
+
+        // resume direction continues: bw, h, bw
+        if (undefined !== this.remain_BW_saved) {
+            this.prevTS_backward = performance.now() - this.remain_BW_saved;
+        }
+        // resume direction changes: fw, h, bw
+        else if (undefined !== this.remain_FW_saved) {
+            this.prevTS_backward = performance.now() - this.remain_FW_saved;
+
+            // update index to reverse direction and avoid jumps when updating position
+            this.fp_index++;
+
+            // clamp
+            const _limit_index = this.fpath_curve.length - 1;
+            this.fp_index = this.fp_index >= _limit_index? _limit_index : this.fp_index;
+        }
+    };
+
+    _cbs.on_forward_to_backward = () => {
+        console.debug("on_forward_to_backward");
+
+        const remain_fw = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_fw;
+        this.prevTS_backward = performance.now() - remain_fw;
+        
+        // update index to reverse direction and avoid jumps when updating position
+        this.fp_index++;
+
+        // clamp
+        const _limit_index = this.fpath_curve.length - 1;
+        this.fp_index = this.fp_index >= _limit_index? _limit_index : this.fp_index;
+    };
+
+    _cbs.on_backward_to_forward = () => {
+        console.debug("on_backward_to_forward");
+
+        const remain_bw = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_bw;
+        this.prevTS_forward = performance.now() - remain_bw;
+
+        // update index to reverse direction and avoid jumps when updating position
+        this.fp_index--;
+
+        // clamp
+        const _limit_index = 0;
+        this.fp_index = this.fp_index <= _limit_index? _limit_index : this.fp_index;
+    };
+
+    _cbs.on_forward_to_hovering = () => {
+        console.debug("on_forward_to_hovering");
+
+        this.remain_FW_saved = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_fw;
+        this.remain_BW_saved = undefined;
+    };
+
+    _cbs.on_backward_to_hovering = () => {
+        console.debug("on_backward_to_hovering");
+
+        this.remain_BW_saved = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_bw;
+        this.remain_FW_saved = undefined;
+    };
+
+    this.mfsm = new PF_MoveFSM(_cbs);
 }
 
 PF_ModelDrone.prototype.load_mat = function () {
@@ -345,17 +380,17 @@ PF_ModelDrone.prototype.move_to_forward_point_interpolated = function (ms) {
         return false;
     }
          
-    const _last_index = this.fpath_curve.length - 1;
-    if (this.fp_index >= _last_index) {
+    const _limit_index = this.fpath_curve.length - 1;
+    if (this.fp_index >= _limit_index) {
         return false;
     }
 
     const _nowTS = performance.now();
-    this.elapsed_forward = _nowTS - this.prevTS_forward;
+    this.elapsed_fw = _nowTS - this.prevTS_forward;
     
-    if (this.elapsed_forward < PF_Common.FPATH_STEP_DURATION_MS) {        
+    if (this.elapsed_fw < PF_Common.FPATH_STEP_DURATION_MS) {        
         // interpolation factor (current part of the interval based on elapsed time)
-        const _i = this.elapsed_forward / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_fw / PF_Common.FPATH_STEP_DURATION_MS;
         // current point3D
         const _p = this.fpath_curve[this.fp_index];
         // next point3D
@@ -394,21 +429,21 @@ PF_ModelDrone.prototype.point_nose_to_forward_point_interpolated = function (ms)
     }
     
     const _lookAt_index = this.fp_index + 1;
-    const _last_index = this.fpath_curve.length - 1;
-    if (_lookAt_index >= _last_index) {
+    const _limit_index = this.fpath_curve.length - 1;
+    if (_lookAt_index >= _limit_index) {
         return false;
     }
 
     const _nowTS = performance.now();
-    this.elapsed_forward = _nowTS - this.prevTS_forward;
+    this.elapsed_fw = _nowTS - this.prevTS_forward;
 
-    if (this.elapsed_forward < PF_Common.FPATH_STEP_DURATION_MS) {
+    if (this.elapsed_fw < PF_Common.FPATH_STEP_DURATION_MS) {
         // start_point (current target point)
         const _tp = this.fpath_curve[_lookAt_index];
         // end_point (next target point)
         const _tp_next = this.fpath_curve[_lookAt_index + 1];
         // lookAt_point (interpolated point between current and next target point based on time elapsed)
-        const _i = this.elapsed_forward / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_fw / PF_Common.FPATH_STEP_DURATION_MS;
         const _la_x = lerp(_tp.x, _tp_next.x, _i);
         const _la_y = lerp(_tp.y, _tp_next.y, _i);
         const _la_z = lerp(_tp.z, _tp_next.z, _i);
@@ -437,17 +472,17 @@ PF_ModelDrone.prototype.move_to_backward_point_interpolated = function (ms) {
         return false;
     }
 
-    const _last_index = 0;
-    if (this.fp_index <= _last_index) {
+    const _limit_index = 0;
+    if (this.fp_index <= _limit_index) {
         return false;
     }
 
     const _nowTS = performance.now();
-    this.elapsed_backward = _nowTS - this.prevTS_backward;
+    this.elapsed_bw = _nowTS - this.prevTS_backward;
     
-    if (this.elapsed_backward < PF_Common.FPATH_STEP_DURATION_MS) {
+    if (this.elapsed_bw < PF_Common.FPATH_STEP_DURATION_MS) {
         // interpolation factor (current part of the interval based on elapsed time)
-        const _i = this.elapsed_backward / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_bw / PF_Common.FPATH_STEP_DURATION_MS;
         // current point3D
         const _p = this.fpath_curve[this.fp_index];
         // prev point3D
@@ -480,21 +515,21 @@ PF_ModelDrone.prototype.point_nose_to_backward_point_interpolated = function (ms
     }
     
     const _lookAt_index = this.fp_index - 1;
-    const _last_index = 0;
-    if (_lookAt_index <= _last_index) {
+    const _limit_index = 0;
+    if (_lookAt_index <= _limit_index) {
         return false;
     }
 
     const _nowTS = performance.now();
-    this.elapsed_backward = _nowTS - this.prevTS_backward;
+    this.elapsed_bw = _nowTS - this.prevTS_backward;
 
-    if (this.elapsed_backward < PF_Common.FPATH_STEP_DURATION_MS) {
+    if (this.elapsed_bw < PF_Common.FPATH_STEP_DURATION_MS) {
         // start_point (current target point)
         const _tp = this.fpath_curve[_lookAt_index];
         // end_point (prev target point)
         const _tp_prev = this.fpath_curve[_lookAt_index - 1];
         // lookAt_point (interpolated point between current and next target point based on time elapsed)
-        const _i = this.elapsed_backward / PF_Common.FPATH_STEP_DURATION_MS;
+        const _i = this.elapsed_bw / PF_Common.FPATH_STEP_DURATION_MS;
         const _la_x = lerp(_tp.x, _tp_prev.x, _i);
         const _la_y = lerp(_tp.y, _tp_prev.y, _i);
         const _la_z = lerp(_tp.z, _tp_prev.z, _i);
@@ -518,14 +553,17 @@ PF_ModelDrone.prototype.point_nose_to_backward_point_interpolated = function (ms
  * @param {Float} ms milliseconds passed since last frame
  */
 PF_ModelDrone.prototype.move_interpolated = function (ms) {
-    if (PF_MoveDrone.HOVERING == this.move_dir){
+    this.mfsm.update_state();
+
+    // every-frame actions
+    if (this.mfsm.is_hovering()){
         // nothing
     }
-    else if (PF_MoveDrone.FORWARD == this.move_dir){
+    else if (this.mfsm.is_forward()){
         this.move_to_forward_point_interpolated(ms);
         this.point_nose_to_forward_point_interpolated(ms);
     }
-    else if (PF_MoveDrone.BACKWARD == this.move_dir){
+    else if (this.mfsm.is_backward()){
         this.move_to_backward_point_interpolated(ms);
         this.point_nose_to_backward_point_interpolated(ms);
     }
