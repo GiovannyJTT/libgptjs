@@ -85,16 +85,33 @@ class PF_MoveFSM {
  */
 PF_MoveFSM.prototype.set_input_control = function () {
     document.addEventListener("keydown",
-        function (event_) {    
-            if (!this.is_hovering()) {
-                return;
-            }
+        function (event_) {
             switch(event_.code) {
                 case "ArrowUp":
-                    this.pending_event = PF_DirEvent.GO_FRONT;
+                    if (this.is_forward()){
+                        // TODO: increase drone-speed positive
+                    }
+                    else if (this.is_hovering()){
+                        // continue
+                        this.pending_event = PF_DirEvent.GO_FRONT;
+                    }
+                    else if (this.is_backward()) {
+                        // reverse dir
+                        this.pending_event = PF_DirEvent.GO_FRONT;
+                    }
                     break;
                 case "ArrowDown":
-                    this.pending_event = PF_DirEvent.GO_BACK;
+                    if (this.is_backward()) {
+                        // TODO: increase drone-speed negative
+                    }
+                    else if (this.is_hovering()){
+                        // continue
+                        this.pending_event = PF_DirEvent.GO_BACK;
+                    }
+                    else if (this.is_forward()) {
+                        // reverse dir
+                        this.pending_event = PF_DirEvent.GO_BACK;
+                    }
                     break;
             }
         }.bind(this)
