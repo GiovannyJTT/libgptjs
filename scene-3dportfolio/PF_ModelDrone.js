@@ -293,28 +293,28 @@ PF_ModelDrone.prototype.set_fsm = function () {
     const _cbs = {};
 
     _cbs.on_hovering_to_forward = () => {
-        console.debug("on_hovering_to_forward");
         this.update_indices_H_FW();
     };
 
     _cbs.on_hovering_to_backward = () => {
-        console.debug("on_hovering_to_backward");
         this.update_indices_H_BW();
     };
 
     _cbs.on_forward_to_backward = () => {
-        console.debug("on_forward_to_backward");
+        this.update_indices_FW_BW();
    };
 
     _cbs.on_backward_to_forward = () => {
-        console.debug("on_backward_to_forward");
+        this.update_indices_BW_FW();
     };
 
     _cbs.on_forward_to_hovering = () => {
+        // fsm changes to hovering when interpolation completed
         console.debug("on_forward_to_hovering");
     };
 
     _cbs.on_backward_to_hovering = () => {
+        // fsm changes to hovering when interpolation completed
         console.debug("on_backward_to_hovering");
     };
 
@@ -351,6 +351,7 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
             if (this.interpolation_completed(i_fw)) {
                 this.fsm.trigger_go_hover();
                 this.i_target++;
+                console.debug("Interpolation completed. target: " + this.i_target);
             }
             else {
                 this.move_to_forward_point_interpolated(i_fw);
@@ -364,6 +365,7 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
             if (this.interpolation_completed(i_bw)) {
                 this.fsm.trigger_go_hover();
                 this.i_target--;
+                console.debug("Interpolation completed. target: " + this.i_target);
             }
             else {
                 this.move_to_backward_point_interpolated(i_bw);
@@ -384,11 +386,12 @@ PF_ModelDrone.prototype.update_indices_H_FW = function () {
     this.i_lookat_start = Math.min(this.i_lookat_start, this.I_SECOND_LAST);
     this.i_lookat_end = Math.min(this.i_lookat_end, this.I_LAST);
 
-    // update time stamps
+    // update time stamp
     this.prevTS_forward = performance.now();
 
-    console.debug("start: " + this.i_start + ", end: " + this.i_end + ", lookat_start: " + this.i_lookat_start
-        + ", lookat_end: " + this.i_lookat_end + ", TS_fw: " + this.prevTS_forward);
+    console.debug("target: " + this.i_target +  ", start: " + this.i_start + ", end: " + this.i_end
+        + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
+        + ", TS_fw: " + this.prevTS_forward);
 }
 
 PF_ModelDrone.prototype.update_indices_H_BW = function () {
@@ -402,23 +405,62 @@ PF_ModelDrone.prototype.update_indices_H_BW = function () {
     this.i_lookat_start = Math.max(this.i_lookat_start, this.I_SECOND);
     this.i_lookat_end = Math.max(this.i_lookat_end, this.I_FIRST);
 
-    // update time stamps
+    // update time stamp
     this.prevTS_backward = performance.now();
 
-    console.debug("start: " + this.i_start +  ", end: " + this.i_end + ", lookat_start: " + this.i_lookat_start
-        + ", lookat_end: " + this.i_lookat_end + ", TS_bw: " + this.prevTS_backward);
+    console.debug("target: " + this.i_target + ", start: " + this.i_start +  ", end: " + this.i_end
+        + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
+        + ", TS_bw: " + this.prevTS_backward);
 }
 
 PF_ModelDrone.prototype.update_indices_FW_BW = function () {
-    // flip segment
-    this.i_start = this.i_target + 1;
-    this.i_end = this.i_target;
+    // reverse segment-points
+    this.i_target = this.i_target + 1;
+    this.i_start = this.i_target;
+    this.i_end = this.i_start - 1;
+    console.debug("Reversed segment-points");
+
+    this.i_lookat_start = this.i_end;
+    this.i_lookat_end = this.i_lookat_start - 1;
+
+    // clamp
+    this.i_end = Math.max(this.i_end, this.I_FIRST);
+    this.i_lookat_start = Math.max(this.i_lookat_start, this.I_SECOND);
+    this.i_lookat_end = Math.max(this.i_lookat_end, this.I_FIRST);
+
+    // update time stamp
+    const remain = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_fw;
+    this.prevTS_backward = performance.now() - remain;
+    console.log("Compensated remaining time");
+
+    console.debug("target: " + this.i_target + ", start: " + this.i_start +  ", end: " + this.i_end
+        + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
+        + ", TS_bw: " + this.prevTS_backward);
 }
 
 PF_ModelDrone.prototype.update_indices_BW_FW = function () {
-    // flip segment
-    this.i_start = this.i_target - 1;
-    this.i_end = this.i_target;
+    // reverse segment-points
+    this.i_target = this.i_target - 1;
+    this.i_start = this.i_target;
+    this.i_end = this.i_start + 1;
+    console.debug("Reversed segment-points");
+
+    this.i_lookat_start = this.i_end;
+    this.i_lookat_end = this.i_lookat_start + 1;
+
+    // clamp
+    this.i_end = Math.min(this.i_end, this.I_LAST);
+    this.i_lookat_start = Math.min(this.i_lookat_start, this.I_SECOND_LAST);
+    this.i_lookat_end = Math.min(this.i_lookat_end, this.I_LAST);
+
+    // update time stamp
+    const remain = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_bw;
+    this.prevTS_forward = performance.now() - remain;
+    console.log("Compensated remaining time");
+
+    console.debug("target: " + this.i_target +  ", start: " + this.i_start + ", end: " + this.i_end
+        + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
+        + ", TS_fw: " + this.prevTS_forward);
 }
 
 PF_ModelDrone.prototype.target_is_first = function () {
@@ -433,8 +475,8 @@ PF_ModelDrone.prototype.target_is_last = function () {
  * @returns {Float} Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
  */
 PF_ModelDrone.prototype.get_interpolation_FW = function () {
-    const _elapsed = performance.now() - this.prevTS_forward;
-    const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
+    this.elapsed_fw = performance.now() - this.prevTS_forward;
+    const _i = this.elapsed_fw / PF_Common.FPATH_STEP_DURATION_MS;
     return Math.min(_i, 1.0);
 }
 
@@ -442,8 +484,8 @@ PF_ModelDrone.prototype.get_interpolation_FW = function () {
  * @returns {Float} Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
  */
 PF_ModelDrone.prototype.get_interpolation_BW = function () {
-    const _elapsed = performance.now() - this.prevTS_backward;
-    const _i = _elapsed / PF_Common.FPATH_STEP_DURATION_MS;
+    this.elapsed_bw = performance.now() - this.prevTS_backward;
+    const _i = this.elapsed_bw / PF_Common.FPATH_STEP_DURATION_MS;
     return Math.min(_i, 1.0);
 }
 
