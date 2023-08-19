@@ -60,7 +60,8 @@ const PF_DirTransitions = {
 
 class PF_MoveFSM {
     /**
-     * Finite state machine for drone-movement
+     * - Finite state machine for drone-movementç
+     * - Initial state is `HOVERING`
      * @param {Dictionary} cbs_ dictionary containing callbacks to be called on_changed state
      */
     constructor (cbs_) {
@@ -78,18 +79,22 @@ class PF_MoveFSM {
     }
 }
 
+/**
+ * - Configures the capturing of input events
+ * - It will accept event only while it is at `HOVERING` state
+ */
 PF_MoveFSM.prototype.set_input_control = function () {
     document.addEventListener("keydown",
-        function (event_) {            
+        function (event_) {    
+            if (!this.is_hovering()) {
+                return;
+            }
             switch(event_.code) {
                 case "ArrowUp":
                     this.pending_event = PF_DirEvent.GO_FRONT;
                     break;
                 case "ArrowDown":
                     this.pending_event = PF_DirEvent.GO_BACK;
-                    break;
-                case "Space":
-                    this.pending_event = PF_DirEvent.GO_HOVER;
                     break;
             }
         }.bind(this)
@@ -183,6 +188,11 @@ PF_MoveFSM.prototype.update_state = function () {
         this.transit(this.pending_event);
         this.pending_event = undefined;
     }
+}
+
+PF_MoveFSM.prototype.trigger_go_hover = function () {
+    this.pending_event = PF_DirEvent.GO_HOVER;
+    console.debug("Externally triggered event: " + this.pending_event.description);
 }
 
 PF_MoveFSM.prototype.state_has_changed = function () {
