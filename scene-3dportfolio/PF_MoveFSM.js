@@ -6,6 +6,7 @@
  * @member PF_DirEvent
  */
 
+import { DiscreteInterpolant } from "three";
 import PF_Common from "./PF_Common";
 
 /**
@@ -95,30 +96,10 @@ PF_MoveFSM.prototype.set_input_control = function () {
             }
             switch(event_.code) {
                 case "ArrowUp":
-                    if (this.is_forward()) {
-                        PF_Common.set_speed_faster();
-                    }
-                    else if (this.is_hovering()) {
-                        // continue
-                        this.pending_event = PF_DirEvent.GO_FRONT;
-                    }
-                    else if (this.is_backward()) {
-                        // reverse dir
-                        this.pending_event = PF_DirEvent.GO_FRONT;
-                    }
+                    this.pending_event = PF_DirEvent.GO_FRONT;
                     break;
                 case "ArrowDown":
-                    if (this.is_backward()) {
-                        PF_Common.set_speed_faster();
-                    }
-                    else if (this.is_hovering()) {
-                        // continue
-                        this.pending_event = PF_DirEvent.GO_BACK;
-                    }
-                    else if (this.is_forward()) {
-                        // reverse dir
-                        this.pending_event = PF_DirEvent.GO_BACK;
-                    }
+                    this.pending_event = PF_DirEvent.GO_BACK;
                     break;
             }
         }.bind(this)
@@ -201,36 +182,20 @@ PF_MoveFSM.prototype.transit = function (event_) {
 }
 
 /**
- * - Transits between states when input-events are received (ex. "ArrowUp", "ScrollUp")
- * - Updates `prev_state` every-frame before calling `transit()`, so `prev_state` will be
- * equal to `state` most of frames except when it changes
- * - Performs per-frame operations depending on current state
+ * - 1. Updates `prev_state` every-frame before handling combination `(incoming-event, current-state)`,
+ * so `prev_state` will be equal to `state` most of frames except when it changes
+ * - 2. Performs actions that need to be repeated every-frame depending on current state
+ * - 3. Handles the combination `(incoming-event, current-state)`.
+ *      - `set_speed_faster` when incoming-event is `GO_FRONT` and current-state is `FORWARD`
+ *      - `set_speed_faster` when incoming-event is `GO_BACK` and current-state is `BACKWARD`
+ * - 4. Triggers state-transition `(current-drone-position, incoming-event)`
+ *      - NOTE: depending on conditions some incomin-events can be rejected and transition will no be triggered
  */
 PF_MoveFSM.prototype.update_state = function () {
+    // 1. update prev_state
     this.prev_state = this.state;
 
-    // handle events every-frame
-    if (undefined !== this.pending_event) {
-        switch (this.pending_event) {
-            case PF_DirEvent.GO_HOVER:
-                this.transit(PF_DirEvent.GO_HOVER);
-                break;
-            case PF_DirEvent.GO_FRONT:
-                if (!this.cbs.target_is_last()) {
-                    this.transit(PF_DirEvent.GO_FRONT);
-                }
-                break;
-            case PF_DirEvent.GO_BACK:
-                if (!this.cbs.target_is_first()) {
-                    this.transit(PF_DirEvent.GO_BACK);
-                }
-                break;
-        }
-        // consume it
-        this.pending_event = undefined;
-    }
-
-    // handle states every-frame
+    // 2. handle every-frame actioons
     switch (this.state) {
         case PF_DirState.HOVERING:
             if (!PF_Common.is_speed_normal()) {
@@ -241,6 +206,53 @@ PF_MoveFSM.prototype.update_state = function () {
             break;
         case PF_DirState.BACKWARD:
             break;
+    }
+
+    // 3. handle (incoming-event, current-state)
+    if (undefined !== this.pending_event) {
+        switch (this.pending_event) {
+            case PF_DirEvent.GO_HOVER: // state-machine event
+                // 4. transit
+                // this event is triggered by the state-machine when interpolation completed
+                this.transit(PF_DirEvent.GO_HOVER);
+                break;
+            case PF_DirEvent.GO_FRONT: // user event
+                if (this.is_forward()) {
+                    PF_Common.set_speed_faster();
+                }
+                else if (this.is_backward()) {
+                    // reverse direction
+                    if (!this.cbs.target_is_last()) {
+                        this.transit(PF_DirEvent.GO_FRONT);
+                    }
+                }
+                else if (this.is_hovering()) {
+                    // continue direction
+                    if (!this.cbs.target_is_last()) {
+                        this.transit(PF_DirEvent.GO_FRONT);
+                    }
+                }
+                break;
+            case PF_DirEvent.GO_BACK: // user event
+                if (this.is_backward()) {
+                    PF_Common.set_speed_faster();
+                }
+                else if (this.is_forward()) {
+                    // reverse direction
+                    if (!this.cbs.target_is_first()) {
+                        this.transit(PF_DirEvent.GO_BACK);
+                    }
+                }
+                else if (this.is_hovering()) {
+                    // continue direction
+                    if (!this.cbs.target_is_first()) {
+                        this.transit(PF_DirEvent.GO_BACK);
+                    }
+                }
+                break;
+        }
+        // consume it
+        this.pending_event = undefined;
     }
 }
 
@@ -254,27 +266,27 @@ PF_MoveFSM.prototype.state_has_changed = function () {
 }
 
 PF_MoveFSM.prototype.is_hovering = function () {
-    return PF_DirState.HOVERING == this.state;
+    return this.state == PF_DirState.HOVERING;
 }
 
 PF_MoveFSM.prototype.is_forward = function () {
-    return PF_DirState.FORWARD == this.state;
+    return this.state == PF_DirState.FORWARD;
 }
 
 PF_MoveFSM.prototype.is_backward = function () {
-    return PF_DirState.BACKWARD == this.state;
+    return this.state == PF_DirState.BACKWARD;
 }
 
 PF_MoveFSM.prototype.prev_is_hovering = function () {
-    return PF_DirState.HOVERING == this.prev_state;
+    return this.prev_state == PF_DirState.HOVERING;
 }
 
 PF_MoveFSM.prototype.prev_is_forward = function () {
-    return PF_DirState.FORWARD == this.prev_state;
+    return this.prev_state == PF_DirState.FORWARD;
 }
 
 PF_MoveFSM.prototype.prev_is_backward = function () {
-    return PF_DirState.BACKWARD == this.prev_state;
+    return this.prev_state == PF_DirState.BACKWARD;
 }
 
 export default PF_MoveFSM;
