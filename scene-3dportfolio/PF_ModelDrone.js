@@ -439,7 +439,7 @@ PF_ModelDrone.prototype.update_indices_FW_BW = function () {
     this.i_lookat_end = Math.max(this.i_lookat_end, this.I_FIRST);
 
     // update time stamp
-    const remain = PF_Common.FPATH_SEGMENT_DURATION_MS - this.elapsed_fw;
+    const remain = PF_Common.get_segment_duration() - this.elapsed_fw;
     this.prevTS_backward = performance.now() - remain;
     console.debug("Compensated remaining time");
 
@@ -465,7 +465,7 @@ PF_ModelDrone.prototype.update_indices_BW_FW = function () {
     this.i_lookat_end = Math.min(this.i_lookat_end, this.I_LAST);
 
     // update time stamp
-    const remain = PF_Common.FPATH_SEGMENT_DURATION_MS - this.elapsed_bw;
+    const remain = PF_Common.get_segment_duration() - this.elapsed_bw;
     this.prevTS_forward = performance.now() - remain;
     console.debug("Compensated remaining time");
 
@@ -487,7 +487,7 @@ PF_ModelDrone.prototype.target_is_last = function () {
  */
 PF_ModelDrone.prototype.get_interpolation_FW = function () {
     this.elapsed_fw = performance.now() - this.prevTS_forward;
-    const _i = this.elapsed_fw / PF_Common.FPATH_SEGMENT_DURATION_MS;
+    const _i = this.elapsed_fw / PF_Common.get_segment_duration();
     return Math.min(_i, 1.0);
 }
 
@@ -496,7 +496,7 @@ PF_ModelDrone.prototype.get_interpolation_FW = function () {
  */
 PF_ModelDrone.prototype.get_interpolation_BW = function () {
     this.elapsed_bw = performance.now() - this.prevTS_backward;
-    const _i = this.elapsed_bw / PF_Common.FPATH_SEGMENT_DURATION_MS;
+    const _i = this.elapsed_bw / PF_Common.get_segment_duration();
     return Math.min(_i, 1.0);
 }
 
