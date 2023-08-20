@@ -100,7 +100,7 @@ PF_ModelDrone.prototype.setup_drone_and_propellers = function (obj_) {
     // set up drone
     this.drone_obj = obj_;
     this.drone_obj.scale.set(PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE, PF_Common.DRONE_SCALE);
-    this.drone_obj.position.set(this.fpath_curve[0].x, this.fpath_curve[0].y, this.fpath_curve[0].z);
+    this.drone_obj.position.set(this.fpath_curve[this.i_target].x, this.fpath_curve[this.i_target].y, this.fpath_curve[this.i_target].z);
 
     // enable casting shadows on the floor
     this.drone_obj.traverse(function(child){child.castShadow = true;});
@@ -330,6 +330,8 @@ PF_ModelDrone.prototype.set_fsm = function () {
     this.I_SECOND = 1;
     this.I_LAST = this.fpath_curve.length - 1;
     this.I_SECOND_LAST = this.fpath_curve.length - 2;
+    
+    // NOTE: spawning drone at i_target
     this.i_target = this.I_FIRST;
 }
 
