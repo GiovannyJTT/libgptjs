@@ -416,6 +416,7 @@ PF_ModelDrone.prototype.update_indices_H_BW = function () {
 PF_ModelDrone.prototype.update_indices_FW_BW = function () {
     // reverse segment-points
     this.i_target = this.i_target + 1;
+    
     this.i_start = this.i_target;
     this.i_end = this.i_start - 1;
     console.debug("Reversed segment-points");
@@ -431,16 +432,17 @@ PF_ModelDrone.prototype.update_indices_FW_BW = function () {
     // update time stamp
     const remain = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_fw;
     this.prevTS_backward = performance.now() - remain;
-    console.log("Compensated remaining time");
+    console.debug("Compensated remaining time");
 
     console.debug("target: " + this.i_target + ", start: " + this.i_start +  ", end: " + this.i_end
         + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
         + ", TS_bw: " + this.prevTS_backward);
 }
 
-PF_ModelDrone.prototype.update_indices_BW_FW = function () {
+PF_ModelDrone.prototype.update_indices_BW_FW = function () {    
     // reverse segment-points
     this.i_target = this.i_target - 1;
+
     this.i_start = this.i_target;
     this.i_end = this.i_start + 1;
     console.debug("Reversed segment-points");
@@ -456,7 +458,7 @@ PF_ModelDrone.prototype.update_indices_BW_FW = function () {
     // update time stamp
     const remain = PF_Common.FPATH_STEP_DURATION_MS - this.elapsed_bw;
     this.prevTS_forward = performance.now() - remain;
-    console.log("Compensated remaining time");
+    console.debug("Compensated remaining time");
 
     console.debug("target: " + this.i_target +  ", start: " + this.i_start + ", end: " + this.i_end
         + ", look_start: " + this.i_lookat_start + ", look_end: " + this.i_lookat_end
