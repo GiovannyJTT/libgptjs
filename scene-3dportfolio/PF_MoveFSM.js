@@ -207,7 +207,22 @@ PF_MoveFSM.prototype.update_state = function () {
     this.prev_state = this.state;
 
     if (undefined !== this.pending_event) {
-        this.transit(this.pending_event);
+        switch (this.pending_event) {
+            case PF_DirEvent.GO_HOVER:
+                this.transit(PF_DirEvent.GO_HOVER);
+                break;
+            case PF_DirEvent.GO_FRONT:
+                if (!this.cbs.target_is_last()) {
+                    this.transit(PF_DirEvent.GO_FRONT);
+                }
+                break;
+            case PF_DirEvent.GO_BACK:
+                if (!this.cbs.target_is_first()) {
+                    this.transit(PF_DirEvent.GO_BACK);
+                }
+                break;
+        }
+        // consume it
         this.pending_event = undefined;
     }
 }
