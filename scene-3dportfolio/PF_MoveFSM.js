@@ -82,16 +82,21 @@ class PF_MoveFSM {
 /**
  * - Configures the capturing of input events
  * - It will accept event only while it is at `HOVERING` state
+ * - It rejects incoming-events when previous-event is not consumed yet in order to
+ * avoid fast changes fw-bw-fw, bw-fw-bw
  */
 PF_MoveFSM.prototype.set_input_control = function () {
     document.addEventListener("keydown",
         function (event_) {
+            if (undefined !== this.pending_event) {
+                return;
+            }
             switch(event_.code) {
                 case "ArrowUp":
-                    if (this.is_forward()){
+                    if (this.is_forward()) {
                         // TODO: increase drone-speed positive
                     }
-                    else if (this.is_hovering()){
+                    else if (this.is_hovering()) {
                         // continue
                         this.pending_event = PF_DirEvent.GO_FRONT;
                     }
@@ -104,7 +109,7 @@ PF_MoveFSM.prototype.set_input_control = function () {
                     if (this.is_backward()) {
                         // TODO: increase drone-speed negative
                     }
-                    else if (this.is_hovering()){
+                    else if (this.is_hovering()) {
                         // continue
                         this.pending_event = PF_DirEvent.GO_BACK;
                     }
