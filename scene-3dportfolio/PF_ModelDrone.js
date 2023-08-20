@@ -281,13 +281,16 @@ PF_ModelDrone.prototype.propellers_to_drone_WS = function () {
 // METHODS FOR DROVE MOVEMENT
 
 /**
- * - Initilizes drone move-state-machine
- * - Installs callbacks to be triggered when input events are cotured:
+ * - Creates a drone move-state-machine
+ * - Passes a list of callbacks to be triggered when input events are captured:
  * move-forward (ex: "ArrowUp"), move-backward (ex: "ArrowDown"), hovering (ex: "Space")
- * - Transition: `FW -> BW` or `BW -> FW`: it updates the `prev timestamps` and the `i_start` and `i_end` indices
- * to avoid jumps into the position
- * - Transition: `FW -> H` or `BW -> H`: it saves the reimaining time and the move-direction it was using
- * - Transition: `H -> FW` or `H -> BW`: it will used the saved values to compute new timestamps properly
+ * - `on_forward_to_backward`, `on_backward_to_forward`: it updates the `i_target`, `i_start` and `i_end` indices
+ * in a way to reverse the segment-points. This avoids jumps into the position. The new move will start
+ * from the curren position. It compensates the `remaining time` and sets timestamps that will be used to compute interpolation factor 
+ * - `on_hovering_to_forward`, `on_hovering_to_backward`: these transitions set `i_start` and `i_end` to continue
+ * the direction assuming `i_target` is not in the extremes.
+ * - `on_forward_to_hovering`, `on_backward_to_hovering`: these transitions will be done by the internal
+ * move-state-machine once the interpolation is completed
  */
 PF_ModelDrone.prototype.set_fsm = function () {
     const _cbs = {};
@@ -317,6 +320,10 @@ PF_ModelDrone.prototype.set_fsm = function () {
         // fsm changes to hovering when interpolation completed
         console.debug("on_backward_to_hovering");
     };
+
+    // NOTE: pass these methods to avoid changing state when `i_target` is on the extremes
+    _cbs.target_is_first = this.target_is_first.bind(this);
+    _cbs.target_is_last = this.target_is_last.bind(this);
 
     this.fsm = new PF_MoveFSM(_cbs);
     this.I_FIRST = 0;
