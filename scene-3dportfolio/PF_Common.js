@@ -157,10 +157,33 @@ const FPATH_MAX_HEIGHT_MM = DRONE_BOUNDING_BOX_SIDE * 4
 // Configure spline curve based on num locations
 const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
 const FPATH_SPLINE_NUM_SEGMENTS_PER_WP = FPATH_SPLINE_NUM_SEGMENTS / FPATH_WPS.length
-const FPATH_SEGMENT_DURATION_MIN_MS = 400 // faster move
-const FPATH_SEGMENT_DURATION_MAX_MS = 800 // slower move
+
+// configure speed
+const FPATH_SEGMENT_DURATION_MIN_MS = 300 // faster move
+const FPATH_SEGMENT_DURATION_MAX_MS = 1000 // slower move
 const FPATH_SEGMENT_SPEED_STEP_MS = 100
-const FPATH_SEGMENT_DURATION_MS = FPATH_SEGMENT_DURATION_MAX_MS // ms per segment (between 2 points)
+let FPATH_SEGMENT_DURATION_MS = FPATH_SEGMENT_DURATION_MAX_MS // ms between 2 points
+
+/**
+ * @returns the updated duration in milliseconds of the segment
+ */
+function get_segment_duration () {
+    return FPATH_SEGMENT_DURATION_MS;
+}
+
+function set_speed_faster() {
+    FPATH_SEGMENT_DURATION_MS -= FPATH_SEGMENT_SPEED_STEP_MS;
+    FPATH_SEGMENT_DURATION_MS = Math.max(FPATH_SEGMENT_DURATION_MS, FPATH_SEGMENT_DURATION_MIN_MS);
+}
+
+function set_speed_slower() {
+    FPATH_SEGMENT_DURATION_MS += FPATH_SEGMENT_SPEED_STEP_MS;
+    FPATH_SEGMENT_DURATION_MS = Math.min(FPATH_SEGMENT_DURATION_MS, FPATH_SEGMENT_DURATION_MAX_MS);
+}
+
+function is_speed_normal() {
+    FPATH_SEGMENT_DURATION_MS == FPATH_SEGMENT_DURATION_MAX_MS;
+}
 
 export default {
     FLOOR_WIDTH,
@@ -184,7 +207,10 @@ export default {
     get_propellers_spin,
     FPATH_SPLINE_NUM_SEGMENTS,
     FPATH_SPLINE_NUM_SEGMENTS_PER_WP,
-    FPATH_SEGMENT_DURATION_MS,
+    get_segment_duration,
+    set_speed_faster,
+    set_speed_slower,
+    is_speed_normal,
     FPATH_MIN_HEIGHT_MM,
     FPATH_MAX_HEIGHT_MM,
     FPATH_WPS,

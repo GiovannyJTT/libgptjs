@@ -6,6 +6,8 @@
  * @member PF_DirEvent
  */
 
+import PF_Common from "./PF_Common";
+
 /**
  * States of the "drone movement / direction".
  * Object.freeze makes Enum objects to be immutable.
@@ -94,7 +96,7 @@ PF_MoveFSM.prototype.set_input_control = function () {
             switch(event_.code) {
                 case "ArrowUp":
                     if (this.is_forward()) {
-                        // TODO: increase drone-speed positive
+                        PF_Common.set_speed_faster();
                     }
                     else if (this.is_hovering()) {
                         // continue
@@ -107,7 +109,7 @@ PF_MoveFSM.prototype.set_input_control = function () {
                     break;
                 case "ArrowDown":
                     if (this.is_backward()) {
-                        // TODO: increase drone-speed negative
+                        PF_Common.set_speed_faster();
                     }
                     else if (this.is_hovering()) {
                         // continue
@@ -202,10 +204,12 @@ PF_MoveFSM.prototype.transit = function (event_) {
  * - Transits between states when input-events are received (ex. "ArrowUp", "ScrollUp")
  * - Updates `prev_state` every-frame before calling `transit()`, so `prev_state` will be
  * equal to `state` most of frames except when it changes
+ * - Performs per-frame operations depending on current state
  */
 PF_MoveFSM.prototype.update_state = function () {
     this.prev_state = this.state;
 
+    // handle events every-frame
     if (undefined !== this.pending_event) {
         switch (this.pending_event) {
             case PF_DirEvent.GO_HOVER:
@@ -224,6 +228,19 @@ PF_MoveFSM.prototype.update_state = function () {
         }
         // consume it
         this.pending_event = undefined;
+    }
+
+    // handle states every-frame
+    switch (this.state) {
+        case PF_DirState.HOVERING:
+            if (!PF_Common.is_speed_normal()) {
+                PF_Common.set_speed_slower();
+            }
+            break;
+        case PF_DirState.FORWARD:
+            break;
+        case PF_DirState.BACKWARD:
+            break;
     }
 }
 
