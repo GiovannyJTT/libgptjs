@@ -3,6 +3,16 @@
  * @constant PF_Common constant values of 3DPorfolio project
  */
 
+// config container for hmtl content
+const CONTAINER_HTML_ID= "container-for-html";
+const CONTAINER_HTML_HEIGHT_MAX = 10000; // pixels
+
+// config container for webgl content
+const CONTAINER_THREEJS_ID = "container-for-threejs"
+const posInfo = document.getElementById(CONTAINER_THREEJS_ID).getBoundingClientRect();
+const CONTAINER_THREEJS_WIDTH = posInfo.width;
+const CONTAINER_THREEJS_HEIGHT = posInfo.height;
+
 /**
  * Floor width in cm
  */
@@ -29,11 +39,6 @@ const SKYBOX_TEXTURE_IMAGE_PATHS = []
 for(let i=0; i < SKYBOX_TEXTURE_IMAGES_NAMES.length; i++) {
     SKYBOX_TEXTURE_IMAGE_PATHS.push(SKYBOX_TEXTURE_PATH + SKYBOX_TEXTURE_IMAGES_NAMES[i]);
 }
-
-const CANVAS_CONTAINER_NAME_FOR_THREEJS = "container-for-threejs"
-const posInfo = document.getElementById(CANVAS_CONTAINER_NAME_FOR_THREEJS).getBoundingClientRect();
-const CANVAS_CONTAINER_WIDTH = posInfo.width;
-const CANVAS_CONTAINER_HEIGHT = posInfo.height;
 
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
 const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
@@ -161,7 +166,7 @@ const FPATH_SPLINE_NUM_SEGMENTS_PER_WP = FPATH_SPLINE_NUM_SEGMENTS / FPATH_WPS.l
 // configure speed
 const FPATH_SEGMENT_DURATION_MIN_MS = 300 // faster move
 const FPATH_SEGMENT_DURATION_MAX_MS = 1000 // slower move
-const FPATH_SEGMENT_SPEED_STEP_MS = 100
+const FPATH_SEGMENT_SPEED_STEP_MS = 50
 let FPATH_SEGMENT_DURATION_MS = FPATH_SEGMENT_DURATION_MAX_MS // ms between 2 points
 
 /**
@@ -186,15 +191,17 @@ function is_speed_normal() {
 }
 
 export default {
+    CONTAINER_HTML_ID,
+    CONTAINER_HTML_HEIGHT_MAX,
+    CONTAINER_THREEJS_ID,
+    CONTAINER_THREEJS_WIDTH,
+    CONTAINER_THREEJS_HEIGHT,
     FLOOR_WIDTH,
     SKYBOX_WIDTH,
     FLOOR_TEXTURE_PATH,
     FLOOR_NORMAL_MAP_PATH,
     SKYBOX_TEXTURE_PATH,
     SKYBOX_TEXTURE_IMAGE_PATHS,
-    CANVAS_CONTAINER_NAME_FOR_THREEJS,
-    CANVAS_CONTAINER_WIDTH,
-    CANVAS_CONTAINER_HEIGHT,
     DRONE_OBJ_PATH,
     DRONE_MTL_PATH,
     DRONE_SCALE,
