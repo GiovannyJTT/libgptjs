@@ -25,7 +25,9 @@ function GPT_Renderer(w, h, sce) {
     this.w = w;
     this.h = h;
     this.gpt_scene = sce;
-    this.wglrenderer = new THREE.WebGLRenderer();
+    this.wglrenderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
 }
 
 /**
