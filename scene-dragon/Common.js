@@ -5,9 +5,14 @@
 
 import THREE from "../external-libs/three-global";
 
-/**
- * Values to be reused in several objects
- */
+// config container for hmtl content
+const CONTAINER_HTML_ID= "container-for-html";
+
+// config container for webgl content
+const CONTAINER_THREEJS_ID = "container-for-threejs"
+const posInfo = document.getElementById(CONTAINER_THREEJS_ID).getBoundingClientRect();
+const CONTAINER_THREEJS_WIDTH = posInfo.width;
+const CONTAINER_THREEJS_HEIGHT = posInfo.height;
 
 /**
  * Floor width in cm
@@ -56,12 +61,12 @@ const FSM_DURATION_LOADING_BULLET_MS = 1000;
 const FSM_DURATION_BULLET_TRAVELLING_MS = 30 * BULLET_STEP_DURATION_MS;
 const FSM_DURATION_RESET_MS = 1000;
 
-const CANVAS_CONTAINER_NAME_FOR_THREEJS = "container-for-threejs"
-const posInfo = document.getElementById(CANVAS_CONTAINER_NAME_FOR_THREEJS).getBoundingClientRect();
-const CANVAS_CONTAINER_WIDTH = posInfo.width;
-const CANVAS_CONTAINER_HEIGHT = posInfo.height;
-
 export default {
+    CONTAINER_HTML_ID,
+    CONTAINER_THREEJS_ID,
+    CONTAINER_THREEJS_WIDTH,
+    CONTAINER_THREEJS_HEIGHT,
+
     FLOOR_WIDTH,
     SKYBOX_WIDTH,
     FLOOR_TEXTURE_PATH,
@@ -85,8 +90,5 @@ export default {
 
     FSM_DURATION_LOADING_BULLET_MS,
     FSM_DURATION_BULLET_TRAVELLING_MS,
-    FSM_DURATION_RESET_MS,
-    CANVAS_CONTAINER_NAME_FOR_THREEJS,
-    CANVAS_CONTAINER_WIDTH,
-    CANVAS_CONTAINER_HEIGHT
+    FSM_DURATION_RESET_MS
 }
