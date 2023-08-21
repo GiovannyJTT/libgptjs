@@ -5,7 +5,8 @@
 
 // config container for hmtl content
 const CONTAINER_HTML_ID= "container-for-html";
-const CONTAINER_HTML_HEIGHT_MAX = 10000; // pixels
+const css_root = document.querySelector(":root");
+const CONTAINER_HTML_HEIGHT_MAX_PX = getComputedStyle(css_root).getPropertyValue("--container-html-max-height-px");
 
 // config container for webgl content
 const CONTAINER_THREEJS_ID = "container-for-threejs"
@@ -192,7 +193,7 @@ function is_speed_normal() {
 
 export default {
     CONTAINER_HTML_ID,
-    CONTAINER_HTML_HEIGHT_MAX,
+    CONTAINER_HTML_HEIGHT_MAX_PX,
     CONTAINER_THREEJS_ID,
     CONTAINER_THREEJS_WIDTH,
     CONTAINER_THREEJS_HEIGHT,
