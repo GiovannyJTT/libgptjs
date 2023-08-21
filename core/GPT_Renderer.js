@@ -16,7 +16,7 @@ import THREE from '../external-libs/three-global'
  * @param {Number} h height of the canvas
  * @param {GPT_Scene} sce our GPT_Scene already configured (It contains the THREE.Scene and an array of models)
  */
-function GPT_Renderer(w, h, sce) {
+function GPT_Renderer(w, h, sce, enable_antialias = false) {
     if (typeof (sce) === "undefined") {
         console.error("GPT_Renderer: scene is undefined when creating GPT_Renderer");
         return;
@@ -26,7 +26,7 @@ function GPT_Renderer(w, h, sce) {
     this.h = h;
     this.gpt_scene = sce;
     this.wglrenderer = new THREE.WebGLRenderer({
-        antialias: true
+        antialias: enable_antialias
     });
 }
 
