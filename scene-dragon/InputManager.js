@@ -130,11 +130,11 @@ InputManager.prototype.create_ui_controller = function () {
     _c = this.create_shoot_button_html();
     this.controllers.set("robot_shoot", _c);
 
-    _c = this.create_stats_widget(Common.CANVAS_CONTAINER_NAME_FOR_THREEJS);
+    _c = this.create_stats_widget();
     this.controllers.set("stats", _c);
 
     // align elements in z-index
-    const zI = document.getElementById(Common.CANVAS_CONTAINER_NAME_FOR_THREEJS).style.zIndex;
+    const zI = document.getElementById(Common.CONTAINER_THREEJS_ID).style.zIndex;
     this.gui.getRoot().domElement.style.zIndex = zI;
     
     // semi-transparent gui
@@ -188,7 +188,7 @@ InputManager.prototype.create_shoot_button_html = function () {
  * Creates a Stats widget located at bottom-left corner of container
  * @returns Stats object to be updated every frame
  */
-InputManager.prototype.create_stats_widget = function (_container_name) {
+InputManager.prototype.create_stats_widget = function () {
     const _stats = new Stats();
 
     // positioning at bottom-left
