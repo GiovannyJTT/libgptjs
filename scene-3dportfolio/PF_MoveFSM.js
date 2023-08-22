@@ -6,7 +6,6 @@
  * @member PF_DirEvent
  */
 
-import { DiscreteInterpolant } from "three";
 import PF_Common from "./PF_Common";
 
 /**
@@ -84,11 +83,12 @@ class PF_MoveFSM {
 
 /**
  * - Configures the capturing of input events
- * - It will accept event only while it is at `HOVERING` state
  * - It rejects incoming-events when previous-event is not consumed yet in order to
- * avoid fast changes fw-bw-fw, bw-fw-bw
+ * avoid fast changes fw-bw-fw, bw-fw-bw, in 2 frames
  */
 PF_MoveFSM.prototype.set_input_control = function () {
+    /*
+    // only keyboard
     document.addEventListener("keydown",
         function (event_) {
             if (undefined !== this.pending_event) {
@@ -102,6 +102,43 @@ PF_MoveFSM.prototype.set_input_control = function () {
                     this.pending_event = PF_DirEvent.GO_BACK;
                     break;
             }
+        }.bind(this)
+    );
+    */
+
+    this.prev_scroll_top = 0;
+    this.min_delta = 75;
+
+    // move to top when refreshing page
+    window.onbeforeunload = function () {
+        window.scrollTo(0, 0);
+    }
+
+    document.addEventListener(
+        "scroll",
+        function (event_) {
+            // WARNING: always reject when pending event still being processed
+            if (undefined !== this.pending_event) {
+                return;
+            }
+
+            const st = document.documentElement.scrollTop;
+            const d = Math.abs(st - this.prev_scroll_top);
+
+            if (d < this.min_delta) {
+                return;
+            }
+            else {
+                if (st > this.prev_scroll_top) {
+                    this.pending_event = PF_DirEvent.GO_FRONT;
+                }
+                else if (st < this.prev_scroll_top) {
+                    this.pending_event = PF_DirEvent.GO_BACK;
+                }
+            }
+
+            // update because the element was scrolled anyways
+            this.prev_scroll_top = st;
         }.bind(this)
     );
 }
