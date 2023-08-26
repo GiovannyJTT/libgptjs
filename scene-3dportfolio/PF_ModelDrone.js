@@ -48,7 +48,6 @@ PF_ModelDrone.prototype.load_mat = function () {
 
         function on_loaded_ok (materials_) {
             materials_.preload();
-            
             // 2. load obj and attach materials
             this.load_obj(materials_);
         }.bind(this),
@@ -59,7 +58,7 @@ PF_ModelDrone.prototype.load_mat = function () {
 
         function on_error (err) {
             console.error(err);
-        }    
+        }
     );
 };
 
@@ -72,8 +71,8 @@ PF_ModelDrone.prototype.load_obj = function (mats_) {
         PF_Common.DRONE_OBJ_PATH,
 
         function on_load_ok_sequence (obj_) {
-
             this.setup_drone_and_propellers(obj_);
+            // 3. call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.drone_obj);
 
         }.bind(this),
