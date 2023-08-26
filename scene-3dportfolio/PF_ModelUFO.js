@@ -6,6 +6,7 @@
 import PF_Common from "./PF_Common";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
+import * as THREE from "three"
 
 class PF_ModelUFO {
     /**
@@ -70,6 +71,11 @@ PF_ModelUFO.prototype.adapt_to_scene = function (obj_) {
     this.ufo_obj = obj_;
     this.ufo_obj.scale.set(PF_Common.UFO_SCALE, PF_Common.UFO_SCALE, PF_Common.UFO_SCALE);
     this.ufo_obj.position.set(0, PF_Common.UFO_POS_Y_MIN, 0);
+
+    const _bb = new THREE.Box3().setFromObject(this.ufo_obj);
+    this.size = new THREE.Vector3();
+    _bb.getSize(this.size);
+    console.debug("PF_ModelUFO: bounding box size: " + JSON.stringify(this.size));
 }
 
 /**

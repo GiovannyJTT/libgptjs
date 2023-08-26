@@ -148,7 +148,7 @@ PF_Scene.prototype.createDrone = function () {
 PF_Scene.prototype.createUFO = function () {
     const _on_loaded_ok = function (ufo_obj_) {
         // add ufo-mesh at runtime
-        this.AddModelToScene("ufo", ufo_obj_)
+        this.AddModelToScene("ufo", ufo_obj_);
     }.bind(this);
 
     // save reference to our class so we can update
@@ -180,16 +180,6 @@ PF_Scene.prototype.updateUFO = function (ms) {
  * 2. Creates a focal-light for each waypoint (location) on the 2D-map (floor)
  */
 PF_Scene.prototype.createLights = function () {
-    /*
-    // 75% white light. Point-Light: emits in all directions
-    const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 1.0);
-    lPoint.position.set(0, 100, 50);
-    this.gpt_lights.set("lPoint", lPoint);
-
-    const lPointHelper = new THREE.PointLightHelper(lPoint, 10);
-    this.gpt_lights.set("lPointHelper", lPointHelper);
-    */
-
     // Ambient-Light: is added when shading the models surfaces. 5% white light (almost black), doesnt need position.
     const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 1.0);
     this.gpt_lights.set("lAmbient", lAmbient);
@@ -204,6 +194,7 @@ PF_Scene.prototype.createLights = function () {
     const lDirectionalHelper = new THREE.DirectionalLightHelper(lDirectional, 10);
     this.gpt_lights.set("lDirectionalHelper", lDirectionalHelper);
 
+    // Focal-lights pointing to on-map countries
     for (let i=0; i < PF_Common.FPATH_WPS.length; i++) {
         const _wp = PF_Common.FPATH_WPS[i]["coords"];
 
@@ -237,6 +228,16 @@ PF_Scene.prototype.createLights = function () {
         const lFocalHelper = new THREE.SpotLightHelper(lFocal);
         this.gpt_lights.set("lFocalHelper_" + i, lFocalHelper);
     }
+
+    // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
+    const pldist = PF_Common.UFO_POS_Y_MIN;
+    const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 30, pldist, 2);
+
+    lPoint.position.set(0, 1.5 * PF_Common.UFO_POS_Y_MIN, 0);
+    this.gpt_lights.set("lPoint_ufo", lPoint);
+
+    const lPointHelper = new THREE.PointLightHelper(lPoint, 10);
+    this.gpt_lights.set("lPointHelper_ufo", lPointHelper);
 }
 
 /**
