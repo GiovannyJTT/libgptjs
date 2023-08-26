@@ -200,7 +200,7 @@ function get_ufo_rot_x_pingpong (current) {
 
 // move up / down
 const UFO_POS_Y_MAX = 3 * FPATH_MAX_HEIGHT_MM
-const UFO_POS_Y_MIN = 50
+const UFO_POS_Y_MIN = FPATH_MAX_HEIGHT_MM
 const UFO_POS_Y_STEP = 1
 let increasing_pos = true
 
