@@ -11,6 +11,7 @@ import PF_ModelSkybox from './PF_ModelSkybox'
 import PF_ModelDrone from './PF_ModelDrone'
 import PF_ModelFlightPath from './PF_ModelFlightPath'
 import PF_FollowCamera from './PF_FollowCamera'
+import PF_ModelUFO from './PF_ModelUFO'
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -57,6 +58,9 @@ PF_Scene.prototype.createObjects = function () {
     this.createSkybox();
     this.createFlightPath();
     this.createDrone();
+
+    // decorations
+    this.createUFO();
 }
 
 PF_Scene.prototype.createAxes = function () {
@@ -141,6 +145,16 @@ PF_Scene.prototype.createDrone = function () {
     this.m_drone = new PF_ModelDrone(_on_loaded_ok, this.scene, this.m_fpath.spline_points3D);
 }
 
+PF_Scene.prototype.createUFO = function () {
+    const _on_loaded_ok = function (ufo_obj_) {
+        // add ufo-mesh at runtime
+        this.AddModelToScene("ufo", ufo_obj_)
+    }.bind(this);
+
+    // save reference to our class so we can update
+    this.m_ufo = new PF_ModelUFO(_on_loaded_ok);
+}
+
 /**
  * Per-frame update
  * Overrides updateObjects function in child object
@@ -148,11 +162,16 @@ PF_Scene.prototype.createDrone = function () {
  */
 PF_Scene.prototype.updateObjects = function (ms) {
     this.updateDrone(ms);
+    this.updateUFO(ms);
 }
 
 PF_Scene.prototype.updateDrone = function (ms) {
     this.m_drone.spin_propellers(ms);
     this.m_drone.move_interpolated(ms);
+}
+
+PF_Scene.prototype.updateUFO = function (ms) {
+    this.m_ufo.fly_on_sky(ms);
 }
 
 /**

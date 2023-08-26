@@ -14,6 +14,8 @@ const posInfo = document.getElementById(CONTAINER_THREEJS_ID).getBoundingClientR
 const CONTAINER_THREEJS_WIDTH = posInfo.width;
 const CONTAINER_THREEJS_HEIGHT = posInfo.height;
 
+// CONFIG TEXTURES
+
 /**
  * Floor width in cm
  */
@@ -41,10 +43,9 @@ for(let i=0; i < SKYBOX_TEXTURE_IMAGES_NAMES.length; i++) {
     SKYBOX_TEXTURE_IMAGE_PATHS.push(SKYBOX_TEXTURE_PATH + SKYBOX_TEXTURE_IMAGES_NAMES[i]);
 }
 
+// DRONE CONFIG
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
 const DRONE_MTL_PATH = "./assets/models/drone-lowpoly/materials.mtl";
-
-// drone config
 const DRONE_SCALE = 56.25
 // displacement depens on scale
 const DRONE_PROPELLERS_DISPLACEMENT_XZ = 12.1875
@@ -55,39 +56,6 @@ const DRONE_BOUNDING_BOX_SIDE = 33
 const DRONE_PROPELERS_ROT_DEGREES = 20
 const DRONE_PROPELERS_ROT_CW = DRONE_PROPELERS_ROT_DEGREES * Math.PI / 180.0 // RADS
 const DRONE_PROPELERS_ROT_CCW = -DRONE_PROPELERS_ROT_CW
-const DRONE_ROT_X_MAX = 3 * Math.PI / 180.0
-const DRONE_ROT_X_MIN = -DRONE_ROT_X_MAX
-const DRONE_ROT_X_STEP = DRONE_ROT_X_MAX / 20.0
-
-let increasing = true
-
-/**
- * Generates an angle in the range [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`] in a ping-pong way.
- * It will start increasing (adding) to the `current angle passed` until it reaches `DRONE_ROT_X_MAX`,
- * then it will start decreasing (substracting) to the `current angle passed` until it reaches `DRONE_ROT_X_MIN`
- * @param {float} current drone rotation on its `X` axis in radians
- * @returns an angle in radians in [`DRONE_ROT_X_MIN`, `DRONE_ROT_X_MAX`]
- */
-function get_drone_rot_x_pingpong (current) {
-    if (increasing) {
-        if (current < DRONE_ROT_X_MAX) {
-            return current + DRONE_ROT_X_STEP;
-        }
-        else {
-            increasing = false;
-            return current;
-        }    
-    }
-    else {
-        if (current > DRONE_ROT_X_MIN) {
-            return current - DRONE_ROT_X_STEP;
-        }
-        else {
-            increasing = true;
-            return current;
-        }
-    }
-};
 
 let fl_y_acc = 0.0;
 let fr_y_acc = 0.0;
@@ -165,7 +133,7 @@ const FPATH_SPLINE_NUM_SEGMENTS = FPATH_WPS.length * 20
 const FPATH_SPLINE_NUM_SEGMENTS_PER_WP = FPATH_SPLINE_NUM_SEGMENTS / FPATH_WPS.length
 
 // configure speed
-const FPATH_SEGMENT_DURATION_MIN_MS = 300 // faster move
+const FPATH_SEGMENT_DURATION_MIN_MS = 200 // faster move
 const FPATH_SEGMENT_DURATION_MAX_MS = 1000 // slower move
 const FPATH_SEGMENT_SPEED_STEP_MS = 50
 let FPATH_SEGMENT_DURATION_MS = FPATH_SEGMENT_DURATION_MAX_MS // ms between 2 points
@@ -191,6 +159,75 @@ function is_speed_normal() {
     FPATH_SEGMENT_DURATION_MS == FPATH_SEGMENT_DURATION_MAX_MS;
 }
 
+// UFO CONFIG
+const UFO_OBJ_PATH = "./assets/models/ufo-lowpoly/model.obj";
+const UFO_MTL_PATH = "./assets/models/ufo-lowpoly/materials.mtl";
+const UFO_SCALE = 50;
+
+// rotate
+const UFO_ROT_X_MAX = 10 * Math.PI / 180.0
+const UFO_ROT_X_MIN = -UFO_ROT_X_MAX
+const UFO_ROT_X_STEP = UFO_ROT_X_MAX / 20.0
+let increasing_rot = true
+
+/**
+ * Generates an angle in the range [`UFO_ROT_X_MIN`, `UFO_ROT_X_MAX`] in a ping-pong way.
+ * It will start increasing (adding) to the `current angle passed` until it reaches `UFO_ROT_X_MAX`,
+ * then it will start decreasing (substracting) to the `current angle passed` until it reaches `UFO_ROT_X_MIN`
+ * @param {float} current drone rotation on its `X` axis in radians
+ * @returns an angle in radians in [`UFO_ROT_X_MIN`, `UFO_ROT_X_MAX`]
+ */
+function get_ufo_rot_x_pingpong (current) {
+    if (increasing_rot) {
+        if (current < UFO_ROT_X_MAX) {
+            return current + UFO_ROT_X_STEP;
+        }
+        else {
+            increasing_rot = false;
+            return current;
+        }    
+    }
+    else {
+        if (current > UFO_ROT_X_MIN) {
+            return current - UFO_ROT_X_STEP;
+        }
+        else {
+            increasing_rot = true;
+            return current;
+        }
+    }
+};
+
+// move up / down
+const UFO_POS_Y_MAX = 3 * FPATH_MAX_HEIGHT_MM
+const UFO_POS_Y_MIN = 50
+const UFO_POS_Y_STEP = 1
+let increasing_pos = true
+
+/**
+ * Idem to get_ufo_rot_x_pingpong but moving up and down
+ */
+function get_ufo_pos_y_pingpong (current) {
+    if (increasing_pos) {
+        if (current < UFO_POS_Y_MAX) {
+            return current + UFO_POS_Y_STEP;
+        }
+        else {
+            increasing_pos = false;
+            return current;
+        }    
+    }
+    else {
+        if (current > UFO_POS_Y_MIN) {
+            return current - UFO_POS_Y_STEP;
+        }
+        else {
+            increasing_pos = true;
+            return current;
+        }
+    }
+}
+
 export default {
     CONTAINER_HTML_ID,
     CONTAINER_HTML_HEIGHT_MAX_PX,
@@ -203,6 +240,12 @@ export default {
     FLOOR_NORMAL_MAP_PATH,
     SKYBOX_TEXTURE_PATH,
     SKYBOX_TEXTURE_IMAGE_PATHS,
+    UFO_OBJ_PATH,
+    UFO_MTL_PATH,
+    UFO_SCALE,
+    UFO_POS_Y_MIN,
+    get_ufo_rot_x_pingpong,
+    get_ufo_pos_y_pingpong,
     DRONE_OBJ_PATH,
     DRONE_MTL_PATH,
     DRONE_SCALE,
@@ -211,7 +254,6 @@ export default {
     DRONE_PROPELLERS_DISPLACEMENT_Y,
     DRONE_PROPELERS_ROT_CW,
     DRONE_PROPELERS_ROT_CCW,
-    get_drone_rot_x_pingpong,
     get_propellers_spin,
     FPATH_SPLINE_NUM_SEGMENTS,
     FPATH_SPLINE_NUM_SEGMENTS_PER_WP,
