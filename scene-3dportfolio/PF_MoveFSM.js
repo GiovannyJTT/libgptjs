@@ -87,26 +87,7 @@ class PF_MoveFSM {
  * avoid fast changes fw-bw-fw, bw-fw-bw, in 2 frames
  */
 PF_MoveFSM.prototype.set_input_control = function () {
-    // Config user-input events allowed / blocked
-    // disable right-click
-    document.body.oncontextmenu = function (e_) {return false;}
-    // disable selection
-    document.body.onselectstart = function (e_) {return false;}
-    // disable copy
-    document.body.oncopy = function (e_) {return false;}
-    // disable cut
-    document.body.oncut = function (e_) {return false;}
-    // disable paste
-    document.body.onpaste = function (e_) {return false;}
-    // disable items drag
-    document.body.ondragstart = function (e_) {return false;}
-    // disable items drop
-    document.body.ondrop = function(e_) {return false;}
-    // disable body scroll
-    document.body.onwheel = function(e_) {return false;}
-    // disable zoom on mobile
-    const vp = document.getElementById("html_viewport_id");
-    vp.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")
+    this.disable_user_events();
 
     // scroll to top when loading / refreshing page
     window.onbeforeunload = function () {
@@ -125,6 +106,63 @@ PF_MoveFSM.prototype.set_input_control = function () {
     else {
         this.set_handle_input_pc();
     }
+}
+
+/**
+ * Config user-input events allowed / blocked in mobile and pc
+ */
+PF_MoveFSM.prototype.disable_user_events = function () {
+    // disable right-click
+    document.body.oncontextmenu = function (e_) {return false;}
+    // disable selection
+    document.body.onselectstart = function (e_) {return false;}
+    // disable copy
+    document.body.oncopy = function (e_) {return false;}
+    // disable cut
+    document.body.oncut = function (e_) {return false;}
+    // disable paste
+    document.body.onpaste = function (e_) {return false;}
+    // disable items drag
+    document.body.ondragstart = function (e_) {return false;}
+    // disable items drop
+    document.body.ondrop = function(e_) {return false;}
+
+    // disable zoom on pc: Ctrl + numpad
+    document.body.addEventListener("keydown",
+        function (e_) {
+            // ctrl-pressed and keydown-event
+            if (e_.ctrlKey) {
+                if (// numpad-subtract
+                    e_.code == "NumpadSubtract" ||
+                    // numpad-add
+                    e_.code == "NumpadAdd" ||
+                    // minus in the middle of keyboard
+                    e_.code == "BracketRight" ||
+                    // plus in the middle of keyboard
+                    e_.code == "Slash") {
+                    e_.preventDefault();
+                }
+            }
+        }
+    );
+
+    // disable zoom on pc: Ctrl + wheel
+    document.body.addEventListener(
+        "wheel",
+        function (e_) {
+            // ctrl-pressed and wheel-event
+            if (e_.ctrlKey) {
+                e_.preventDefault();
+            }
+        },
+        // needs passive false
+        { passive: false }
+    );
+
+    // disable zoom on mobile
+    const vp = document.getElementById("html_viewport_id");
+    vp.setAttribute("content",
+        "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0");
 }
 
 PF_MoveFSM.prototype.set_handle_input_mobile = function () {
