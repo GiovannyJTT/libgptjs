@@ -82,9 +82,10 @@ class PF_MoveFSM {
 }
 
 /**
- * - Configures the capturing of input events
- * - It rejects incoming-events when previous-event is not consumed yet in order to
- * avoid fast changes fw-bw-fw, bw-fw-bw, in 2 frames
+ * 1. Disables user input events (zoom, scroll, copy, drag, etc.)
+ * 2. Sets initial window values (scroll to 0,0)
+ * 3. Installs our own handle of scroll up / down.
+ * We are scrolling the webpage based on current drone position on the flight-path
  */
 PF_MoveFSM.prototype.set_input_control = function () {
     this.disable_user_events();
@@ -94,12 +95,11 @@ PF_MoveFSM.prototype.set_input_control = function () {
         window.scrollTo(0, 0);
     }
 
-    // Config input-events to move the drone
-    this.prev_scroll_top = 0;
-    // 60 fps, period 16.6 ms, user-input sampling_period_ms 16.6 * 3 (49.8 ms)
-    this.sampling_period_ms = 16.6;
+    // 60 fps, period 16.6 ms, user-input sampling_period_ms 16.6 * 4 (66.4 ms)
+    this.sampling_period_ms = 66.4;
+    this.scroll_step_px = 10;
+    this.prevTS_sampling = performance.now();
 
-    this.prevTS = performance.now();
     if (this.is_mobile_device()) {
         this.set_handle_input_mobile();
     }
@@ -155,36 +155,51 @@ PF_MoveFSM.prototype.disable_user_events = function () {
                 e_.preventDefault();
             }
         },
-        // needs passive false
-        { passive: false }
+        // needs passive false because we are calling preventDefault
+        {passive: false}
     );
 
     // disable zoom on mobile
     const vp = document.getElementById("html_viewport_id");
     vp.setAttribute("content",
         "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0");
+
+    // disable scroll on mobile and pc
+    document.body.style.overflow = "hidden";
+    document.body.style.userSelect = "none";
+
+    // trigger window.resize so webgl will update canvas-size to fill the removed-scroll-bar
+    setTimeout(
+        () => { window.dispatchEvent(new Event('resize')); },
+        100);
 }
 
 PF_MoveFSM.prototype.set_handle_input_mobile = function () {
     // mobile: capture touch-movements
-    document.addEventListener(    
+    document.body.addEventListener(    
         "touchmove",
         function (event_) {
             if (!this.check_accept_event()) {
                 return;
             }
 
-            const st = document.documentElement.scrollTop;
-            if (st > this.prev_scroll_top) {
+            const new_pos_y = event_.changedTouches[0].clientY;
+            if (new_pos_y < this.prev_touch_pos_y) {
                 this.pending_event = PF_DirEvent.GO_FRONT;
+                window.scrollTo(0, document.documentElement.scrollTop + this.scroll_step_px);
             }
-            else if (st < this.prev_scroll_top) {
+            else if (new_pos_y > this.prev_touch_pos_y) {
                 this.pending_event = PF_DirEvent.GO_BACK;
+                window.scrollTo(0, document.documentElement.scrollTop - this.scroll_step_px);
             }
-            // update because the element was scrolled anyways
-            this.prev_scroll_top = st;
+            // save last
+            this.prev_touch_pos_y = new_pos_y;
         }.bind(this)
     );
+
+    document.body.addEventListener("touchstart", function (event_) {
+        this.prev_touch_pos_y = event_.changedTouches[0].clientY;
+    });
 }
 
 PF_MoveFSM.prototype.set_handle_input_pc = function () {
@@ -197,9 +212,11 @@ PF_MoveFSM.prototype.set_handle_input_pc = function () {
             
             if (event_.deltaY > 0) {
                 this.pending_event = PF_DirEvent.GO_FRONT;
+                window.scrollTo(0, document.documentElement.scrollTop + this.scroll_step_px);
             }
             else if (event_.deltaY < 0) {
                 this.pending_event = PF_DirEvent.GO_BACK;
+                window.scrollTo(0, document.documentElement.scrollTop - this.scroll_step_px);
             }
         }.bind(this)
     );
@@ -211,13 +228,13 @@ PF_MoveFSM.prototype.check_accept_event = function () {
     }
 
     // reject: avoid burst of events
-    const elapsed = performance.now() - this.prevTS;
+    const elapsed = performance.now() - this.prevTS_sampling;
     if (elapsed < this.sampling_period_ms) {
         return false;
     }
 
     // accept and update time-stamp
-    this.prevTS = performance.now();
+    this.prevTS_sampling = performance.now();
     return true;
 }
 
