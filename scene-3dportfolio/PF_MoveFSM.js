@@ -95,8 +95,8 @@ PF_MoveFSM.prototype.set_input_control = function () {
         window.scrollTo(0, 0);
     }
 
-    // 60 fps, period 16.6 ms, user-input sampling_period_ms 16.6 * 4 (66.4 ms)
-    this.sampling_period_ms = 66.4;
+    // 60 fps, period 16.6 ms, user-input sampling_period_ms
+    this.sampling_period_ms = 1000 / 60;
     this.scroll_step_px = 10;
     this.prevTS_sampling = performance.now();
 
@@ -175,6 +175,10 @@ PF_MoveFSM.prototype.disable_user_events = function () {
 }
 
 PF_MoveFSM.prototype.set_handle_input_mobile = function () {
+    this.ini_touch_pos_y = undefined; // on touch-start
+    this.prev_touch_pos_y = undefined; // every touch-move
+    this.min_delta = (window.innerHeight / 40); // 1/40 works smooth for most mobile-screens
+
     // mobile: capture touch-movements
     document.body.addEventListener(    
         "touchmove",
@@ -184,22 +188,42 @@ PF_MoveFSM.prototype.set_handle_input_mobile = function () {
             }
 
             const new_pos_y = event_.changedTouches[0].clientY;
-            if (new_pos_y < this.prev_touch_pos_y) {
+            const scrolling_up = (new_pos_y < this.ini_touch_pos_y);
+
+            // reject when not enough delta
+            let d = undefined;
+            if (scrolling_up) {
+                d = this.prev_touch_pos_y - new_pos_y;
+            }
+            else {
+                d = new_pos_y - this.prev_touch_pos_y;
+            }
+            if (d <= this.min_delta) {
+                return;
+            }
+
+            // delta accepted
+            this.prev_touch_pos_y = new_pos_y;
+
+            // move fw or bw
+            if (scrolling_up) {
                 this.pending_event = PF_DirEvent.GO_FRONT;
                 window.scrollTo(0, document.documentElement.scrollTop + this.scroll_step_px);
             }
-            else if (new_pos_y > this.prev_touch_pos_y) {
+            else {
                 this.pending_event = PF_DirEvent.GO_BACK;
                 window.scrollTo(0, document.documentElement.scrollTop - this.scroll_step_px);
             }
-            // save last
-            this.prev_touch_pos_y = new_pos_y;
         }.bind(this)
     );
 
-    document.body.addEventListener("touchstart", function (event_) {
-        this.prev_touch_pos_y = event_.changedTouches[0].clientY;
-    });
+    document.body.addEventListener("touchstart",
+        function (event_) {
+            this.ini_touch_pos_y = event_.changedTouches[0].clientY;
+            this.prev_touch_pos_y = this.ini_touch_pos_y;
+            console.debug(event_);
+        }.bind(this)
+    );
 }
 
 PF_MoveFSM.prototype.set_handle_input_pc = function () {
