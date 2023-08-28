@@ -6,10 +6,12 @@
 // config container for hmtl content
 const CONTAINER_HTML_ID= "container-for-html";
 const css_root = document.querySelector(":root");
-const CONTAINER_HTML_HEIGHT_MAX_PX = getComputedStyle(css_root).getPropertyValue("--container-html-max-height-px");
+let CONTAINER_HTML_HEIGHT_MAX_PX = getComputedStyle(css_root).getPropertyValue("--container-html-max-height-px");
+CONTAINER_HTML_HEIGHT_MAX_PX = CONTAINER_HTML_HEIGHT_MAX_PX.substring(0, CONTAINER_HTML_HEIGHT_MAX_PX.length-2);
+CONTAINER_HTML_HEIGHT_MAX_PX = parseInt(CONTAINER_HTML_HEIGHT_MAX_PX);
 
 // config container for webgl content
-const CONTAINER_THREEJS_ID = "container-for-threejs"
+const CONTAINER_THREEJS_ID = "container-for-threejs";
 const posInfo = document.getElementById(CONTAINER_THREEJS_ID).getBoundingClientRect();
 const CONTAINER_THREEJS_WIDTH = posInfo.width;
 const CONTAINER_THREEJS_HEIGHT = posInfo.height;
