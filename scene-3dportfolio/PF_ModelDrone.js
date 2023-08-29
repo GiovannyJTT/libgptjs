@@ -356,10 +356,12 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
     else if (this.fsm.is_forward()){
         if (!this.target_is_last()) {
             const i_fw = this.get_interpolation_FW();
+            this.fsm.scrollup_page_by_drone_pos(this.i_target, i_fw);
+
             if (this.interpolation_completed(i_fw)) {
                 this.fsm.trigger_go_hover();
                 this.i_target++;
-                console.debug("Interpolation completed. target: " + this.i_target);
+                console.debug("FW-Interpolation completed. Target: " + this.i_target);
             }
             else {
                 this.move_to_forward_point_interpolated(i_fw);
@@ -370,10 +372,12 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
     else if (this.fsm.is_backward()){
         if (!this.target_is_first()) {
             const i_bw = this.get_interpolation_BW();
+            this.fsm.scrolldown_page_by_drone_pos(this.i_target, i_bw);
+
             if (this.interpolation_completed(i_bw)) {
                 this.fsm.trigger_go_hover();
                 this.i_target--;
-                console.debug("Interpolation completed. target: " + this.i_target);
+                console.debug("BW-Interpolation completed. Target: " + this.i_target);
             }
             else {
                 this.move_to_backward_point_interpolated(i_bw);
