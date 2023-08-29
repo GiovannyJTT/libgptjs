@@ -7,6 +7,7 @@
  */
 
 import PF_Common from "./PF_Common";
+import { lerp } from "three/src/math/MathUtils";
 
 /**
  * States of the "drone movement / direction".
@@ -62,9 +63,16 @@ const PF_DirTransitions = {
 
 class PF_MoveFSM {
     /**
-     * - Finite state machine for drone-movementç
+     * - Finite state machine for drone-movement
      * - Initial state is `HOVERING`
      * @param {Dictionary} cbs_ dictionary containing callbacks to be called on_changed state
+     * @property {PF_DirState} state current state
+     * @property {PF_DirState} prev_state in previous frame
+     * @property {PF_DirEvent} pending_event user-input event just captured, converte into a PF_DirEvent
+     * and ready to be consumed by the state-machine update method
+     * @property {Int} PX_PER_SEGMENT number of pixels corresponding to a segment between 2 points3D on the spline-curve
+     * @property {Int} TOTAL_POINTS3D total number of points that form the spline-curve
+     * @property {Int} SCROLL_INTERPOLATION_FACTOR 0.1 factor to scroll up or down every frame while the drone is moving
      */
     constructor (cbs_) {
         this.cbs = cbs_;
@@ -73,11 +81,17 @@ class PF_MoveFSM {
             return;
         }
 
+        // drone-move current and prev state
         this.state = PF_DirState.HOVERING;
         this.prev_state = undefined;
+        
+        // set user input events handling
         this.pending_event = undefined;
-
         this.set_input_control();
+
+        this.PX_PER_SEGMENT = Math.floor(PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX / PF_Common.FPATH_SPLINE_NUM_SEGMENTS);
+        this.TOTAL_POINTS3D = PF_Common.FPATH_SPLINE_NUM_SEGMENTS + 1;
+        this.SCROLL_INTERPOLATION_FACTOR = 0.1;
     }
 }
 
@@ -85,7 +99,9 @@ class PF_MoveFSM {
  * 1. Disables user input events (zoom, scroll, copy, drag, etc.)
  * 2. Sets initial window values (scroll to 0,0)
  * 3. Installs our own handle of scroll up / down.
- * We are scrolling the webpage based on current drone position on the flight-path
+ * 4. We are scrolling the webpage based on current drone position on the flight-path (spline-curve)
+ * @property {Float} sampling_period_ms 1000/60, used as period to capture the user-input-events (mobile or pc)
+ * @property {Float} prevTS_sampling time stamp in milliseconds captured in the previous frame
  */
 PF_MoveFSM.prototype.set_input_control = function () {
     this.disable_user_events();
@@ -97,9 +113,7 @@ PF_MoveFSM.prototype.set_input_control = function () {
 
     // 60 fps, period 16.6 ms, user-input sampling_period_ms
     this.sampling_period_ms = 1000 / 60;
-    this.scroll_step_px = 10;
     this.prevTS_sampling = performance.now();
-
     if (this.is_mobile_device()) {
         this.set_handle_input_mobile();
     }
@@ -110,6 +124,18 @@ PF_MoveFSM.prototype.set_input_control = function () {
 
 /**
  * Config user-input events allowed / blocked in mobile and pc
+ * 1. Disable right click
+ * 2. Disable text selection
+ * 3. Disable text copy
+ * 4. Disable text cut
+ * 5. Disable text paste
+ * 6. Disable items drag
+ * 7. Disable items drop
+ * 8. Disable zoom on pc: Ctrl + numpad
+ * 9. Disable zoom on pc: Ctrl + wheel
+ * 10. Disable zoom on mobile: meta viewport
+ * 11. Disable scroll on pc and mobile: overflow hidden
+ * 12. Trigger window.resize so webgl will update canvas-size to fill the removed-scroll-bar
  */
 PF_MoveFSM.prototype.disable_user_events = function () {
     // disable right-click
@@ -174,6 +200,15 @@ PF_MoveFSM.prototype.disable_user_events = function () {
         100);
 }
 
+/**
+ * - Installs callback to handle "touchmove" event on mobile
+ * - Events will be rejected when previous is not consumed yet and depending on sampling rate to avoid bursts
+ * - A new pending_envet will be enqueued to be consumed by the state machine
+ * @property {Int} ini_touch_pos_y clientY value captured when starting the move
+ * @property {Int} prev_touch_pos_y clientY value on the previous frame to detect moving up or down
+ * @property {Float} min_delta min amount of pixels needed to consider to move trigger a move on the
+ * drone. Value of `window.innerHeight/40` works smooth for most mobile screens
+ */
 PF_MoveFSM.prototype.set_handle_input_mobile = function () {
     this.ini_touch_pos_y = undefined; // on touch-start
     this.prev_touch_pos_y = undefined; // every touch-move
@@ -208,11 +243,9 @@ PF_MoveFSM.prototype.set_handle_input_mobile = function () {
             // move fw or bw
             if (scrolling_up) {
                 this.pending_event = PF_DirEvent.GO_FRONT;
-                window.scrollTo(0, document.documentElement.scrollTop + this.scroll_step_px);
             }
             else {
                 this.pending_event = PF_DirEvent.GO_BACK;
-                window.scrollTo(0, document.documentElement.scrollTop - this.scroll_step_px);
             }
         }.bind(this)
     );
@@ -226,8 +259,13 @@ PF_MoveFSM.prototype.set_handle_input_mobile = function () {
     );
 }
 
+/**
+ * - Installs callback to handle mouse "wheel" event on pc
+ * - Events will be rejected when previous is not consumed yet and depending on sampling rate to avoid bursts
+ * - A new pending_envet will be enqueued to be consumed by the state machine
+ * - "wheel" event contains deltaY which value is 100 when wheel moved forward and -100 when moved backward
+ */
 PF_MoveFSM.prototype.set_handle_input_pc = function () {
-    // pc: capture from keyboard and mousewheel
     document.addEventListener("wheel",
         function (event_) {
             if (!this.check_accept_event()){
@@ -236,15 +274,17 @@ PF_MoveFSM.prototype.set_handle_input_pc = function () {
             
             if (event_.deltaY > 0) {
                 this.pending_event = PF_DirEvent.GO_FRONT;
-                window.scrollTo(0, document.documentElement.scrollTop + this.scroll_step_px);
             }
             else if (event_.deltaY < 0) {
                 this.pending_event = PF_DirEvent.GO_BACK;
-                window.scrollTo(0, document.documentElement.scrollTop - this.scroll_step_px);
             }
         }.bind(this)
     );
 }
+
+/**
+ * @returns true when no pending event and sampling rate is reached, false otherwise
+ */
 PF_MoveFSM.prototype.check_accept_event = function () {
     // reject: prev pending event being handled
     if (undefined !== this.pending_event) {
@@ -273,6 +313,45 @@ PF_MoveFSM.prototype.is_mobile_device = function () {
 
     return check;
 }
+
+/**
+ * Scrolls-UP the page depending on the current drone position along the spline-curve
+ * @param {Int} i_target current point3D the drone is moving from towards the i_next (forward)
+ * @param {Float} target_interp_elapsed factor interpolated between current i_target and i_next points
+ * @property {Float} travelled factor [0, 1] that reflects the amount of points the drone has already travelled on the entire spline-curve
+ * @property {Int} page_scroll number of pixels to be scrolled from top (y=0) based on the amount of points the drone has already travelled
+ * @property {Int} section_scroll number of pixels to be scrolled based on current drone-position moving into the segment (between i_target and i_next)
+ * @property {Int} target_scroll total pixels to be scrolled: `page_scroll + section_scroll`
+ * @property {Int} i_scroll per-frame approximation to the target_scroll. Using interpolation for smooth displacement with factor SCROLL_INTERPOLATION_FACTOR
+ */
+PF_MoveFSM.prototype.scrollup_page_by_drone_pos = function (i_target, target_interp_elapsed) {
+    const travelled = i_target / this.TOTAL_POINTS3D;
+    const page_scroll = Math.floor(travelled * PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX);
+    const section_scroll = target_interp_elapsed * this.PX_PER_SEGMENT;
+    const target_scroll = page_scroll + section_scroll;
+    const i_scroll = lerp(document.documentElement.scrollTop, target_scroll, this.SCROLL_INTERPOLATION_FACTOR);
+    window.scrollTo(0, i_scroll);
+}
+
+/**
+ * Scrolls-DOWN the page depending on the current drone position along the spline-curve
+ * @param {Int} i_target current point3D the drone is moving from towards the i_next (forward)
+ * @param {Float} target_interp_elapsed factor interpolated between current i_target and i_next points
+ * @property {Float} travelled factor [0, 1] that reflects the amount of points the drone has already travelled on the entire spline-curve
+ * @property {Int} page_scroll number of pixels to be scrolled from top (y=0) based on the amount of points the drone has already travelled
+ * @property {Int} section_scroll number of pixels to be scrolled based on current drone-position moving into the segment (between i_target and i_next)
+ * @property {Int} target_scroll total pixels to be scrolled: `page_scroll - section_scroll`
+ * @property {Int} i_scroll per-frame approximation to the target_scroll. Using interpolation for smooth displacement with factor SCROLL_INTERPOLATION_FACTOR
+ */
+PF_MoveFSM.prototype.scrolldown_page_by_drone_pos = function (i_target, target_interp_elapsed) {
+    const travelled = i_target / this.TOTAL_POINTS3D;
+    const page_scroll = travelled * PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX;
+    const section_scroll = target_interp_elapsed * this.PX_PER_SEGMENT;
+    const target_scroll = page_scroll - section_scroll;
+    const i_scroll = lerp(document.documentElement.scrollTop, target_scroll, this.SCROLL_INTERPOLATION_FACTOR);
+    window.scrollTo(0, i_scroll);
+}
+
 
 /**
  * Provides the `destination-state` by checking the transition from the `current-state` with the given `event_`
