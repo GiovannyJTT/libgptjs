@@ -351,12 +351,12 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
     this.fsm.update_state();
 
     if (this.fsm.is_hovering()){
-        // nothing
+        this.fsm.scrollend_smooth_on_drone_hovering();
     }
     else if (this.fsm.is_forward()){
         if (!this.target_is_last()) {
             const i_fw = this.get_interpolation_FW();
-            this.fsm.scrollup_page_by_drone_pos(this.i_target, i_fw);
+            this.fsm.scrollup_page_on_drone_fw(this.i_target, i_fw);
 
             if (this.interpolation_completed(i_fw)) {
                 this.fsm.trigger_go_hover();
@@ -372,7 +372,7 @@ PF_ModelDrone.prototype.move_interpolated = function (ms) {
     else if (this.fsm.is_backward()){
         if (!this.target_is_first()) {
             const i_bw = this.get_interpolation_BW();
-            this.fsm.scrolldown_page_by_drone_pos(this.i_target, i_bw);
+            this.fsm.scrolldown_page_on_drone_bw(this.i_target, i_bw);
 
             if (this.interpolation_completed(i_bw)) {
                 this.fsm.trigger_go_hover();

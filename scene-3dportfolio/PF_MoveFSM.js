@@ -72,7 +72,10 @@ class PF_MoveFSM {
      * and ready to be consumed by the state-machine update method
      * @property {Int} PX_PER_SEGMENT number of pixels corresponding to a segment between 2 points3D on the spline-curve
      * @property {Int} TOTAL_POINTS3D total number of points that form the spline-curve
-     * @property {Int} SCROLL_INTERPOLATION_FACTOR 0.1 factor to scroll up or down every frame while the drone is moving
+     * @property {Float} SCROLL_INTERP_FACTOR_WHEN_DRONE_MOVING factor value to scroll up or down every frame while the drone is moving. Value of 0.25
+     * is responsible enough but will miss some px to reach `goal_scroll`
+     * @property {Float} SCROLL_INTERP_FACTOR_WHEN_DRONE_HOVERING factor value to complete the scroll to match the `goal_scroll` smoothly. Value of 0.08
+     * is good to appreciate the smooth end and being fast enough
      */
     constructor (cbs_) {
         this.cbs = cbs_;
@@ -91,7 +94,8 @@ class PF_MoveFSM {
 
         this.PX_PER_SEGMENT = Math.floor(PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX / PF_Common.FPATH_SPLINE_NUM_SEGMENTS);
         this.TOTAL_POINTS3D = PF_Common.FPATH_SPLINE_NUM_SEGMENTS + 1;
-        this.SCROLL_INTERPOLATION_FACTOR = 0.1;
+        this.SCROLL_INTERP_FACTOR_WHEN_DRONE_MOVING = 0.25;
+        this.SCROLL_INTERP_FACTOR_WHEN_DRONE_HOVERING = 0.08;
     }
 }
 
@@ -315,7 +319,7 @@ PF_MoveFSM.prototype.is_mobile_device = function () {
 }
 
 /**
- * Scrolls-UP the page depending on the current drone position along the spline-curve
+ * Scrolls-UP the page depending on the current drone position along the spline-curve while it is `moving forward`
  * @param {Int} i_target current point3D the drone is moving from towards the i_next (forward)
  * @param {Float} target_interp_elapsed factor interpolated between current i_target and i_next points
  * @property {Float} travelled factor [0, 1] that reflects the amount of points the drone has already travelled on the entire spline-curve
@@ -324,18 +328,18 @@ PF_MoveFSM.prototype.is_mobile_device = function () {
  * @property {Int} target_scroll total pixels to be scrolled: `page_scroll + section_scroll`
  * @property {Int} i_scroll per-frame approximation to the target_scroll. Using interpolation for smooth displacement with factor SCROLL_INTERPOLATION_FACTOR
  */
-PF_MoveFSM.prototype.scrollup_page_by_drone_pos = function (i_target, target_interp_elapsed) {
+PF_MoveFSM.prototype.scrollup_page_on_drone_fw = function (i_target, target_interp_elapsed) {
     const travelled = i_target / this.TOTAL_POINTS3D;
     const page_scroll = Math.floor(travelled * PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX);
     const section_scroll = target_interp_elapsed * this.PX_PER_SEGMENT;
-    const target_scroll = page_scroll + section_scroll;
-    const i_scroll = lerp(document.documentElement.scrollTop, target_scroll, this.SCROLL_INTERPOLATION_FACTOR);
+    this.goal_scroll = page_scroll + section_scroll;
+    const i_scroll = lerp(document.documentElement.scrollTop, this.goal_scroll, this.SCROLL_INTERP_FACTOR_WHEN_DRONE_MOVING);
     window.scrollTo(0, i_scroll);
 }
 
 /**
- * Scrolls-DOWN the page depending on the current drone position along the spline-curve
- * @param {Int} i_target current point3D the drone is moving from towards the i_next (forward)
+ * Scrolls-DOWN the page depending on the current drone position along the spline-curve while it is `moving backward`
+ * @param {Int} i_target current point3D the drone is moving from towards the i_next (backward)
  * @param {Float} target_interp_elapsed factor interpolated between current i_target and i_next points
  * @property {Float} travelled factor [0, 1] that reflects the amount of points the drone has already travelled on the entire spline-curve
  * @property {Int} page_scroll number of pixels to be scrolled from top (y=0) based on the amount of points the drone has already travelled
@@ -343,15 +347,24 @@ PF_MoveFSM.prototype.scrollup_page_by_drone_pos = function (i_target, target_int
  * @property {Int} target_scroll total pixels to be scrolled: `page_scroll - section_scroll`
  * @property {Int} i_scroll per-frame approximation to the target_scroll. Using interpolation for smooth displacement with factor SCROLL_INTERPOLATION_FACTOR
  */
-PF_MoveFSM.prototype.scrolldown_page_by_drone_pos = function (i_target, target_interp_elapsed) {
+PF_MoveFSM.prototype.scrolldown_page_on_drone_bw = function (i_target, target_interp_elapsed) {
     const travelled = i_target / this.TOTAL_POINTS3D;
     const page_scroll = travelled * PF_Common.CONTAINER_HTML_HEIGHT_MAX_PX;
     const section_scroll = target_interp_elapsed * this.PX_PER_SEGMENT;
-    const target_scroll = page_scroll - section_scroll;
-    const i_scroll = lerp(document.documentElement.scrollTop, target_scroll, this.SCROLL_INTERPOLATION_FACTOR);
+    this.goal_scroll = page_scroll - section_scroll;
+    const i_scroll = lerp(document.documentElement.scrollTop, this.goal_scroll, this.SCROLL_INTERP_FACTOR_WHEN_DRONE_MOVING);
     window.scrollTo(0, i_scroll);
 }
 
+/**
+ * It completes scrolling the page to match `goal_scroll` value smoothly by completing the interpolation while drone is in `hovering`
+ */
+PF_MoveFSM.prototype.scrollend_smooth_on_drone_hovering = function () {
+    if (document.documentElement.scrollTop !== this.goal_scroll) {
+        const i_scroll = lerp(document.documentElement.scrollTop, this.goal_scroll, this.SCROLL_INTERP_FACTOR_WHEN_DRONE_HOVERING);
+        window.scrollTo(0, i_scroll);
+    }
+}
 
 /**
  * Provides the `destination-state` by checking the transition from the `current-state` with the given `event_`
