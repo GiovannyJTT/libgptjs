@@ -208,15 +208,18 @@ PF_MoveFSM.prototype.disable_user_events = function () {
  * - Installs callback to handle "touchmove" event on mobile
  * - Events will be rejected when previous is not consumed yet and depending on sampling rate to avoid bursts
  * - A new pending_envet will be enqueued to be consumed by the state machine
- * @property {Int} ini_touch_pos_y clientY value captured when starting the move
- * @property {Int} prev_touch_pos_y clientY value on the previous frame to detect moving up or down
- * @property {Float} min_delta min amount of pixels needed to consider to move trigger a move on the
- * drone. Value of `window.innerHeight/40` works smooth for most mobile screens
+ * @property {Float} MIN_DELTA_Y min amount of pixels needed to consider to trigger a move on the
+ * drone. It should be higher than `touch.radiusY` (commonly 11px). Value set at "touchstart".
+ * @property {Int} touch_pos_y_ini clientY value captured when starting the move. Value set at "touchstart".
+ * @property {Int} touch_pos_y_prev clientY value on the previous frame to detect moving up or down. Value set at "touchstart".
+ * @property {String} scrolling_dir_prev "up" or "down" saved on the previous event. It is used to detect change on scroll direction.
+ * Value set at "touchstart".
  */
 PF_MoveFSM.prototype.set_handle_input_mobile = function () {
-    this.ini_touch_pos_y = undefined; // on touch-start
-    this.prev_touch_pos_y = undefined; // every touch-move
-    this.min_delta = (window.innerHeight / 40); // 1/40 works smooth for most mobile-screens
+    this.MIN_DELTA_Y = undefined;
+    this.touch_pos_y_ini = undefined; // on touch-start
+    this.touch_pos_y_prev = undefined; // every touch-move
+    this.scrolling_dir_prev = undefined;
 
     // mobile: capture touch-movements
     document.body.addEventListener(    
@@ -227,37 +230,48 @@ PF_MoveFSM.prototype.set_handle_input_mobile = function () {
             }
 
             const new_pos_y = event_.changedTouches[0].clientY;
-            const scrolling_up = (new_pos_y < this.ini_touch_pos_y);
+            const new_dir = new_pos_y < this.touch_pos_y_prev? "up" : "down";
 
-            // reject when not enough delta
-            let d = undefined;
-            if (scrolling_up) {
-                d = this.prev_touch_pos_y - new_pos_y;
+            // first move after "touchstart"
+            if (this.scrolling_dir_prev === undefined) {
+                this.scrolling_dir_prev = new_dir;
             }
-            else {
-                d = new_pos_y - this.prev_touch_pos_y;
+
+            // check direction changed
+            if (new_dir !== this.scrolling_dir_prev) {
+                // invert scroll direction
+                console.info("touchmove direction changed: " + this.scrolling_dir_prev + " --> " + new_dir);
+                this.touch_pos_y_ini = new_pos_y;
+                this.touch_pos_y_prev = this.touch_pos_y_ini;
             }
-            if (d <= this.min_delta) {
+
+            // save dir to check direction changed
+            this.scrolling_dir_prev = new_dir;
+
+            // get delta 
+            const d = new_dir === "up"? this.touch_pos_y_prev - new_pos_y : new_pos_y - this.touch_pos_y_prev;
+
+            // Not enough delta, reject event
+            if (d <= this.MIN_DELTA_Y) {
                 return;
             }
 
             // delta accepted
-            this.prev_touch_pos_y = new_pos_y;
+            this.touch_pos_y_prev = new_pos_y;
 
-            // move fw or bw
-            if (scrolling_up) {
-                this.pending_event = PF_DirEvent.GO_FRONT;
-            }
-            else {
-                this.pending_event = PF_DirEvent.GO_BACK;
-            }
+            // enqueue event to be consumed by the state-machine and move drone fw / bw
+            this.pending_event = new_dir === "up"? PF_DirEvent.GO_FRONT : PF_DirEvent.GO_BACK;
         }.bind(this)
     );
 
     document.body.addEventListener("touchstart",
         function (event_) {
-            this.ini_touch_pos_y = event_.changedTouches[0].clientY;
-            this.prev_touch_pos_y = this.ini_touch_pos_y;
+            const num_touches_max = (screen.height / event_.changedTouches[0].radiusY);
+            const ratio_touches_max = num_touches_max / 70;
+            this.MIN_DELTA_Y = Math.floor(event_.changedTouches[0].radiusY * ratio_touches_max);
+            this.touch_pos_y_ini = event_.changedTouches[0].clientY;
+            this.touch_pos_y_prev = this.touch_pos_y_ini;
+            this.scrolling_dir_prev = undefined;
             console.debug(event_);
         }.bind(this)
     );
