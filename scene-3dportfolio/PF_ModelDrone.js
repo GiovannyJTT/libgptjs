@@ -509,8 +509,8 @@ PF_ModelDrone.prototype.interpolation_completed = function (i_) {
 
 /**
  * - Moves the drone to a point between `i_start` and `i_end` depending on the received `i_fw` factor
- * @property {THREE.Vector3} `i_start` and `i_end` are set outside, when a event of movement (FW, BW, H) is captured
- * @param {Flaot} i_fw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
+ * @property {THREE.Vector3} i_start and `i_end` are set outside, when a event of movement (FW, BW, H) is captured
+ * @param {Float} i_fw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
  */
 PF_ModelDrone.prototype.move_to_forward_point_interpolated = function (i_fw) {
     // current point3D
@@ -531,10 +531,10 @@ PF_ModelDrone.prototype.move_to_forward_point_interpolated = function (i_fw) {
  * - Pointing towards an interpolated point makes the rotation smoother
  * - Note: when two points3D of the spline curve are vertically aligned, the`THREE.Object3D.lookAt()` can keep
  * flipping the object suddenly because of gimbal-lock.
- * @param {Flaot} i_fw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
+ * @param {Float} i_fw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
  * @property {THREE.Vector3} `i_lookat_start` and `i_lookat_end` are set outside to define the next-segment. The drone will
  * be looking-at an interpolated point into the next-segment
- * @returns {boolean} true when rotated properly, false otherwise
+ * @returns {Bool} true when rotated properly, false otherwise
  */
 PF_ModelDrone.prototype.point_nose_to_forward_point_interpolated = function (i_fw) {
     // start_point (current target point)
@@ -553,8 +553,8 @@ PF_ModelDrone.prototype.point_nose_to_forward_point_interpolated = function (i_f
 
 /**
  * - Moves the drone to the previous point using interpolation between current and previous in the curve
- * @param {Flaot} i_bw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
- * @returns {boolean} true when moved properly, false otherwise
+ * @param {Float} i_bw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
+ * @returns {Bool} true when moved properly, false otherwise
  */
 PF_ModelDrone.prototype.move_to_backward_point_interpolated = function (i_bw) {
     // current point3D
@@ -572,10 +572,10 @@ PF_ModelDrone.prototype.move_to_backward_point_interpolated = function (i_bw) {
 /**
  * - Updates the rotation of the drone to align with the direction is going
  * - NOTE: It will not rotate around its axis, hence simulates reverse move as a car
- * @param {Flaot} i_bw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
+ * @param {Float} i_bw Interpolation factor `[0, 1]` (current part of the interval / segement based on elapsed time)
  * @property {THREE.Vector3} `i_lookat_start` and `i_lookat_end` are set outside to define the next-segment. The drone will
  * be looking-at an interpolated point into the next-segment
- * @returns {boolean} true when rotated properly, false otherwise
+ * @returns {Bool} true when rotated properly, false otherwise
  */
 PF_ModelDrone.prototype.point_nose_to_backward_point_interpolated = function (i_bw) {
     // start_point (current target point)
