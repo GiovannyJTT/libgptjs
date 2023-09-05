@@ -599,7 +599,7 @@ PF_ModelDrone.prototype.animate_shaking = function (ms) {
     if (this.drone_obj === undefined) {
         return false;
     }
-    this.drone_obj.rotation.x = PF_Common.get_drone_rot_x_pingpong(this.drone_obj.rotation.x);
+    this.drone_obj.rotation.x = PF_Common.get_ufo_rot_x_pingpong(this.drone_obj.rotation.x);
 }
 
 export default PF_ModelDrone
