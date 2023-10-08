@@ -12,6 +12,7 @@ import PF_ModelDrone from './PF_ModelDrone'
 import PF_ModelFlightPath from './PF_ModelFlightPath'
 import PF_FollowCamera from './PF_FollowCamera'
 import PF_ModelUFO from './PF_ModelUFO'
+import PF_ModelBillboard from './PF_ModelBillboard'
 
 /**
  * Creating a child object (kind of child class) by Inheriting from GPT_Scene (Follow steps 1 to 3)
@@ -61,6 +62,9 @@ PF_Scene.prototype.createObjects = function () {
 
     // decorations
     this.createUFO();
+
+    // iteractive items
+    this.createBillboard();
 }
 
 PF_Scene.prototype.createAxes = function () {
@@ -155,6 +159,13 @@ PF_Scene.prototype.createUFO = function () {
     this.m_ufo = new PF_ModelUFO(_on_loaded_ok);
 }
 
+PF_Scene.prototype.createBillboard = function () {
+    const _on_loaded_ok = function (billboard_obj_) {
+        this.AddModelToScene("billboard", billboard_obj_);
+    }.bind(this);
+    this.m_billboard = new PF_ModelBillboard(_on_loaded_ok);
+}
+
 /**
  * Per-frame update
  * Overrides updateObjects function in child object
@@ -163,6 +174,7 @@ PF_Scene.prototype.createUFO = function () {
 PF_Scene.prototype.updateObjects = function (ms) {
     this.updateDrone(ms);
     this.updateUFO(ms);
+    this.updateBillboard(ms);
 }
 
 PF_Scene.prototype.updateDrone = function (ms) {
@@ -172,6 +184,13 @@ PF_Scene.prototype.updateDrone = function (ms) {
 
 PF_Scene.prototype.updateUFO = function (ms) {
     this.m_ufo.fly_on_sky(ms);
+}
+
+PF_Scene.prototype.updateBillboard = function (ms) {
+    if (undefined !== this.m_drone.drone_obj) {
+        this.m_billboard.place_at_wp( this.m_drone.get_target_wp() );
+        this.m_billboard.face_to(this.m_drone.drone_obj.position);
+    }
 }
 
 /**
