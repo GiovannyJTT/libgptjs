@@ -230,6 +230,12 @@ function get_ufo_pos_y_pingpong (current) {
     }
 }
 
+// BILLBOARD CONFIG
+
+const BILLBOARD_OBJ_PATH = "./assets/models/billboard-lowpoly/model.obj";
+const BILLBOARD_MTL_PATH = "./assets/models/billboard-lowpoly/materials.mtl"
+const BILLBOARD_SCALE = 100;
+
 export default {
     CONTAINER_HTML_ID,
     CONTAINER_HTML_HEIGHT_MAX_PX,
@@ -266,5 +272,8 @@ export default {
     FPATH_MIN_HEIGHT_MM,
     FPATH_MAX_HEIGHT_MM,
     FPATH_WPS,
-    FPATH_WPS_LIGHT_HEIGHT
+    FPATH_WPS_LIGHT_HEIGHT,
+    BILLBOARD_OBJ_PATH,
+    BILLBOARD_MTL_PATH,
+    BILLBOARD_SCALE
 }
