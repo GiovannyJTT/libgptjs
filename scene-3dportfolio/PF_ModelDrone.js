@@ -602,4 +602,15 @@ PF_ModelDrone.prototype.animate_shaking = function (ms) {
     this.drone_obj.rotation.x = PF_Common.get_ufo_rot_x_pingpong(this.drone_obj.rotation.x);
 }
 
+/**
+ * - Returns the current waypoint-country (name, coordinates, date, etc.) based on the current target index `i_target` and the
+ * number of segments per waypoint (Check: `PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP`)
+ * @returns {Dictionary} A dictionary with information of the current waypoint-country.
+ *  Example: `{name: "VALENCIA", coords: {x: 1, y: 2}, date: "2017-March"}`
+ */
+PF_ModelDrone.prototype.get_target_wp = function () {
+    const _wp_i = Math.floor(this.i_target / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
+    return PF_Common.FPATH_WPS[_wp_i];
+}
+
 export default PF_ModelDrone
