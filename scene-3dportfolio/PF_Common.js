@@ -236,7 +236,7 @@ function get_ufo_pos_y_pingpong (current) {
 
 const BILLBOARD_OBJ_PATH = "./assets/models/billboard-lowpoly/model.obj";
 const BILLBOARD_MTL_PATH = "./assets/models/billboard-lowpoly/materials.mtl"
-const BILLBOARD_SCALE = 100;
+const BILLBOARD_SCALE = 70;
 
 export default {
     CONTAINER_HTML_ID,
