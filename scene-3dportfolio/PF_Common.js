@@ -125,6 +125,8 @@ const FPATH_WPS = [
     {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July"},
     {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-November"}
 ]
+console.debug(FPATH_WPS);
+
 const FPATH_WPS_LIGHT_HEIGHT = DRONE_BOUNDING_BOX_SIDE * 3
 
 // Flight path spline config
