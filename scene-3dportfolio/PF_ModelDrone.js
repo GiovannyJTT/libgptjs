@@ -605,12 +605,27 @@ PF_ModelDrone.prototype.animate_shaking = function (ms) {
 /**
  * - Returns the current waypoint-country (name, coordinates, date, etc.) based on the current target index `i_target` and the
  * number of segments per waypoint (Check: `PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP`)
- * @returns {Dictionary} A dictionary with information of the current waypoint-country.
- *  Example: `{name: "VALENCIA", coords: {x: 1, y: 2}, date: "2017-March"}`
+ * @returns {Dictionary} A dictionary with information of the current segment between countries. Example:
+ * ```json
+ * {
+ *  wp_start: {name: "VALENCIA", coords: {x: -204.4, y: 366.6}, date: "2017-March", wp_index: 0},
+ *  wp_end: {name: "HELSINKI", coords: {x: 343.3, y: -244.4}, date: "2019-March", wp_index: 1}
+ * }
+ * ```
  */
-PF_ModelDrone.prototype.get_target_wp = function () {
-    const _wp_i = Math.floor(this.i_target / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
-    return PF_Common.FPATH_WPS[_wp_i];
+PF_ModelDrone.prototype.get_waypoints_segment = function () {
+    const i = Math.floor(this.i_target / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
+    const wp_end = PF_Common.FPATH_WPS[i];
+    wp_end.wp_index = i;
+
+    const s = {wp_start: undefined, wp_end: wp_end};
+    if (wp_end.wp_index == 0) {
+        s.wp_start = {name: "ORIGIN", coords: {x: 0, y: 0}, date: "0000-00-00", wp_index: -1};
+    }
+    else {
+        s.wp_start = PF_Common.FPATH_WPS[i - 1];
+    }
+    return s;
 }
 
 export default PF_ModelDrone

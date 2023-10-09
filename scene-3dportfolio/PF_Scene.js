@@ -188,7 +188,7 @@ PF_Scene.prototype.updateUFO = function (ms) {
 
 PF_Scene.prototype.updateBillboard = function (ms) {
     if (undefined !== this.m_drone.drone_obj) {
-        this.m_billboard.place_at_wp( this.m_drone.get_target_wp() );
+        this.m_billboard.place_at_wp( this.m_drone.get_waypoints_segment() );
         this.m_billboard.face_to(this.m_drone.drone_obj.position);
     }
 }
