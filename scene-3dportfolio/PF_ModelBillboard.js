@@ -85,26 +85,39 @@ PF_ModelBillboard.prototype.adapt_to_scene = function (obj_) {
 }
 
 /**
- * - per-frame update
- * - Places the billboard object at the waypoint-contry
- * - It displaces the object a bit so the drone will not hit into it
- * @param {Dictionary} wp Example: `{name: "VALENCIA", coords: {x: 1, y: 2}, date: "2017-March"}`
+ * - Places the billboard-object at a point between current and next waypoint-country in order to show
+ * information on the panel while the drone is reaching the next target-waypoint
+ * @param {Dictionary} wp_segment Example:
+ * ```json
+ * {
+ *  wp_start: {name: "VALENCIA", coords: {x: -204.4, y: 366.6}, date: "2017-March", wp_index: 0},
+ *  wp_end: {name: "HELSINKI", coords: {x: 343.3, y: -244.4}, date: "2019-March", wp_index: 1}
+ * }
+ * ```
  */
-PF_ModelBillboard.prototype.place_at_wp = function (wp) {
+PF_ModelBillboard.prototype.place_at_wp = function (wp_segment) {
     if (undefined === this.billboard_obj){
         return;
     }
 
-    this.billboard_obj.position.x = wp.coords.x;
-    this.billboard_obj.position.y = (this.size.y / 2);
-    // this model-center it is displaced, fixing it
-    this.billboard_obj.position.y -= (this.size.y * 0.075)
-    this.billboard_obj.position.z = wp.coords.y;
+    const end = new THREE.Vector3(wp_segment.wp_end.coords.x, 0, wp_segment.wp_end.coords.y);
+    const start = new THREE.Vector3(wp_segment.wp_start.coords.x, 0, wp_segment.wp_start.coords.y);
 
-    // add disp
-    // TODO: calculate displacement based on direction from previus wp-country
-    this.billboard_obj.position.x -= this.size.x * 0.75;
-    this.billboard_obj.position.z += this.size.z;
+    const end_pos = new THREE.Vector3(
+        end.x,
+        // this model is not centered properly, fixing coord 'y'
+        (this.size.y / 2) - (this.size.y * 0.075),
+        end.z
+    );
+
+    // displacement based on wp-segment direction to not collide with drone
+    const v = end.sub(start).normalize();
+    const disp = v.multiplyScalar(2.5 * this.size.z);
+    const disp_pos = end_pos.sub(disp);
+
+    // update pos
+    const final_pos = disp_pos;
+    this.billboard_obj.position.set(final_pos.x, final_pos.y, final_pos.z);
 }
 
 PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
