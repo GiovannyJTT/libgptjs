@@ -1,6 +1,6 @@
 /**
  * @module libgptjs Graphical Programming with ThreeJS (GPT)
- * @class PF_SModelSkybox
+ * @class PF_ModelSkybox
  */
 
 import * as THREE from 'three'

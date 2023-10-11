@@ -1,6 +1,6 @@
 /**
  * @module libgptjs Graphical Programming with ThreeJS (GPT)
- * @class PF_ModelUFO
+ * @class PF_ModelBillboard
  */
 
 import PF_Common from "./PF_Common";
