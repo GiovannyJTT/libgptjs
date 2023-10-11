@@ -614,17 +614,19 @@ PF_ModelDrone.prototype.animate_shaking = function (ms) {
  * ```
  */
 PF_ModelDrone.prototype.get_waypoints_segment = function () {
-    const i = Math.floor(this.i_target / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
-    const wp_end = PF_Common.FPATH_WPS[i];
-    wp_end.wp_index = i;
+    const s = {wp_start: undefined, wp_end: undefined};
+    const i = Math.floor( Math.max(this.i_target, this.i_target - 5)  / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
 
-    const s = {wp_start: undefined, wp_end: wp_end};
-    if (wp_end.wp_index == 0) {
+    s.wp_end = PF_Common.FPATH_WPS[i];
+    s.wp_end.wp_index = i;
+
+    if (s.wp_end.wp_index == 0) {
         s.wp_start = {name: "ORIGIN", coords: {x: 0, y: 0}, date: "0000-00-00", wp_index: -1};
     }
     else {
         s.wp_start = PF_Common.FPATH_WPS[i - 1];
     }
+
     return s;
 }
 
