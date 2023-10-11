@@ -238,6 +238,10 @@ const BILLBOARD_OBJ_PATH = "./assets/models/billboard-lowpoly/model.obj";
 const BILLBOARD_MTL_PATH = "./assets/models/billboard-lowpoly/materials.mtl"
 const BILLBOARD_SCALE = 70;
 
+// ARCADE CONFIG
+const ARCADE_FBX_PATH = "./assets/models/arcade-lowpoly/model.fbx"
+const ARCADE_SCALE = 0.5;
+
 export default {
     CONTAINER_HTML_ID,
     CONTAINER_HTML_HEIGHT_MAX_PX,
@@ -277,5 +281,7 @@ export default {
     FPATH_WPS_LIGHT_HEIGHT,
     BILLBOARD_OBJ_PATH,
     BILLBOARD_MTL_PATH,
-    BILLBOARD_SCALE
+    BILLBOARD_SCALE,
+    ARCADE_FBX_PATH,
+    ARCADE_SCALE
 }
