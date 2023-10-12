@@ -232,15 +232,19 @@ function get_ufo_pos_y_pingpong (current) {
     }
 }
 
-// BILLBOARD CONFIG
+// FOLLOW-CAMERA CONFIG
+const FOLLOW_CAM_RADIAL_DISTANCE = 150;
+const FOLLOW_CAM_INTERPOLATION_FACTOR = 0.05;
 
+// BILLBOARD CONFIG
 const BILLBOARD_OBJ_PATH = "./assets/models/billboard-lowpoly/model.obj";
 const BILLBOARD_MTL_PATH = "./assets/models/billboard-lowpoly/materials.mtl"
 const BILLBOARD_SCALE = 70;
 
 // ARCADE CONFIG
 const ARCADE_FBX_PATH = "./assets/models/arcade-lowpoly/model.fbx"
-const ARCADE_SCALE = 0.5;
+const ARCADE_SCALE = 0.25;
+const ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM = FOLLOW_CAM_RADIAL_DISTANCE - 10
 
 export default {
     CONTAINER_HTML_ID,
@@ -279,9 +283,12 @@ export default {
     FPATH_MAX_HEIGHT_MM,
     FPATH_WPS,
     FPATH_WPS_LIGHT_HEIGHT,
+    FOLLOW_CAM_RADIAL_DISTANCE,
+    FOLLOW_CAM_INTERPOLATION_FACTOR,
     BILLBOARD_OBJ_PATH,
     BILLBOARD_MTL_PATH,
     BILLBOARD_SCALE,
     ARCADE_FBX_PATH,
-    ARCADE_SCALE
+    ARCADE_SCALE,
+    ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM
 }
