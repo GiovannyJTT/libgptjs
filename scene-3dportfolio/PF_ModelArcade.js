@@ -66,8 +66,12 @@ PF_ModelArcade.prototype.adapt_to_scene = function (obj_) {
 }
 
 /**
- * - Places the ARCADE-object at a point between current and next waypoint-country in order to show
- * information on the panel while the drone is reaching the next target-waypoint
+ * - Places the ARCADE-object close to the wp-country and displacement a bit in order to be
+ *  focused by the follow-camera when the drone is landing
+ *      - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by two 3D-points on the ground
+ *  that touch the wp-country. (The 3D-points of this curve-on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
+ * - This object shows information (pictures) on its screen and the user can swipe forward or backwards with 2 buttons
+ * - This object keeps facing the camera
  * @param {Dictionary} wp_segment Example:
  * ```json
  * {
@@ -81,23 +85,18 @@ PF_ModelArcade.prototype.place_at_wp = function (wp_segment) {
         return;
     }
 
-    const end = new THREE.Vector3(wp_segment.wp_end.coords.x, 0, wp_segment.wp_end.coords.y);
-    const start = new THREE.Vector3(wp_segment.wp_start.coords.x, 0, wp_segment.wp_start.coords.y);
-
     const end_pos = new THREE.Vector3(
-        end.x,
+        wp_segment.wp_end.coords.x,
         this.size.y / 2,
-        end.z
+        wp_segment.wp_end.coords.y
     );
 
-    // // displacement based on direction from prev and current wp-country
-    // let v = end.sub(start).normalize();
-    // v = v.add(new THREE.Vector3(0.5, 0, -0.5)).normalize();
-    // const disp = v.multiplyScalar(80);
-    // const disp_pos = end_pos.add(disp);
+    // displacement-vector to center the screen on the camera when drone is landing
+    const disp = new THREE.Vector3(1.125, 0, -0.5).normalize()
+        .multiplyScalar(PF_Common.ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM);
 
     // update pos
-    const final_pos = end_pos;
+    const final_pos = end_pos.add(disp);
     this.arcade_obj.position.set(final_pos.x, final_pos.y, final_pos.z);
 }
 
@@ -107,7 +106,8 @@ PF_ModelArcade.prototype.face_to = function (lookat_pos) {
     }
     const pos = new THREE.Vector3(lookat_pos.x, this.arcade_obj.position.y, lookat_pos.z);
     this.arcade_obj.lookAt(pos);
-    this.arcade_obj.rotateX(-Math.PI/2);
+    // fix rotation
+    this.arcade_obj.rotateX(-Math.PI / 2);
 }
 
 export default PF_ModelArcade
