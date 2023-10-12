@@ -621,7 +621,7 @@ PF_ModelDrone.prototype.get_waypoints_segment = function () {
     s.wp_end.wp_index = i;
 
     if (s.wp_end.wp_index == 0) {
-        s.wp_start = {name: "ORIGIN", coords: {x: 0, y: 0}, date: "0000-00-00", wp_index: -1};
+        s.wp_start = {name: "INIT", coords: {x: -900, y: 1200}, date: "0000-00-00", wp_index: -1};
     }
     else {
         s.wp_start = PF_Common.FPATH_WPS[i - 1];
