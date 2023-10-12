@@ -28,6 +28,7 @@ PF_ModelArcade.prototype.load_mat = function () {
 
         function on_loaded (obj_) {
             this.adapt_to_scene(obj_);
+            this.calc_pos_per_wp_country();
 
             // call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.arcade_obj);
@@ -66,10 +67,34 @@ PF_ModelArcade.prototype.adapt_to_scene = function (obj_) {
 }
 
 /**
- * - Places the ARCADE-object close to the wp-country and displacement a bit in order to be
- *  focused by the follow-camera when the drone is landing
+ * - Calculates the position of the arcade-object close to the wp-country coords and stores them into `this.ppw`
+ * - The displacement is to make the arcade-screen to be focused by the follow-camera when the drone is landing
  *      - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by two 3D-points on the ground
- *  that touch the wp-country. (The 3D-points of this curve-on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
+ *      that touch the wp-country. (The 3D-points of this curve-on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
+ */
+PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
+    this.ppw = [];
+ 
+    for (let i=0; i < PF_Common.FPATH_WPS.length; i++) {
+        const wp = PF_Common.FPATH_WPS[i];
+
+        const pos_at_wp = new THREE.Vector3(
+            wp.coords.x,
+            this.size.y / 2,
+            wp.coords.y
+        );
+
+        // displacement-vector to center the arcade-screen on the camera when drone is landing
+        const disp = new THREE.Vector3(1.125, 0, -0.5).normalize()
+            .multiplyScalar(PF_Common.ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM);
+
+        const final_pos = pos_at_wp.add(disp);
+        this.ppw.push(final_pos);
+    }
+}
+
+/**
+ * - Places the ARCADE-object close to the wp-country (`segment.wp_end.wp_index`)
  * - This object shows information (pictures) on its screen and the user can swipe forward or backwards with 2 buttons
  * - This object keeps facing the camera
  * @param {Dictionary} wp_segment Example:
@@ -85,19 +110,8 @@ PF_ModelArcade.prototype.place_at_wp = function (wp_segment) {
         return;
     }
 
-    const end_pos = new THREE.Vector3(
-        wp_segment.wp_end.coords.x,
-        this.size.y / 2,
-        wp_segment.wp_end.coords.y
-    );
-
-    // displacement-vector to center the screen on the camera when drone is landing
-    const disp = new THREE.Vector3(1.125, 0, -0.5).normalize()
-        .multiplyScalar(PF_Common.ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM);
-
-    // update pos
-    const final_pos = end_pos.add(disp);
-    this.arcade_obj.position.set(final_pos.x, final_pos.y, final_pos.z);
+    const pos = this.ppw[ wp_segment.wp_end.wp_index ];
+    this.arcade_obj.position.set(pos.x, pos.y, pos.z);
 }
 
 PF_ModelArcade.prototype.face_to = function (lookat_pos) {
