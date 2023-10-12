@@ -67,13 +67,13 @@ PF_ModelArcade.prototype.adapt_to_scene = function (obj_) {
 }
 
 /**
- * - Calculates the position of the arcade-object close to the wp-country coords and stores them into `this.ppw`
+ * - Calculates the position of the arcade-object close to the wp-country coords and stores them into `this.pos_per_wp`
  * - The displacement is to make the arcade-screen to be focused by the follow-camera when the drone is landing
  *      - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by two 3D-points on the ground
  *      that touch the wp-country. (The 3D-points of this curve-on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
  */
 PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
-    this.ppw = [];
+    this.pos_per_wp = [];
  
     for (let i=0; i < PF_Common.FPATH_WPS.length; i++) {
         const wp = PF_Common.FPATH_WPS[i];
@@ -89,7 +89,7 @@ PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
             .multiplyScalar(PF_Common.ARCADE_DISPLACEMENT_TO_FOCUS_ON_CAM);
 
         const final_pos = pos_at_wp.add(disp);
-        this.ppw.push(final_pos);
+        this.pos_per_wp.push(final_pos);
     }
 }
 
@@ -110,7 +110,7 @@ PF_ModelArcade.prototype.place_at_wp = function (wp_segment) {
         return;
     }
 
-    const pos = this.ppw[ wp_segment.wp_end.wp_index ];
+    const pos = this.pos_per_wp[ wp_segment.wp_end.wp_index ];
     this.arcade_obj.position.set(pos.x, pos.y, pos.z);
 }
 
