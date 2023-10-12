@@ -615,7 +615,7 @@ PF_ModelDrone.prototype.animate_shaking = function (ms) {
  */
 PF_ModelDrone.prototype.get_waypoints_segment = function () {
     const s = {wp_start: undefined, wp_end: undefined};
-    const i = Math.floor( Math.max(this.i_target, this.i_target - 5)  / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
+    const i = Math.floor(this.i_target / PF_Common.FPATH_SPLINE_NUM_SEGMENTS_PER_WP);
 
     s.wp_end = PF_Common.FPATH_WPS[i];
     s.wp_end.wp_index = i;
