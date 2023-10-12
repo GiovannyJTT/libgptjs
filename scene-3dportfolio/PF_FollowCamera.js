@@ -17,7 +17,7 @@ class PF_FollowCamera {
      * taking into accoun the current rotation of the target_obj and keep the `radial_dist`
      * @property {Float} `PF_Common.FOLLOW_CAM_RADIAL_DISTANCE` (default 150) distance to keep between camera and target_obj
      * @property {Float} `PF_Common.FOLLOW_CAM_INTERPOLATION_FACTOR` (default 0.05) interpolation factor in range `[0.0, 1.0]` to update the camera-position every frame.
-     * The `update()` method of this class is commonly calle at 60 fps, so the value of `i_pos` is to make the camera to rotate smoothly
+     * The `update()` method of this class is commonly calle at 60 fps, so the value of `FOLLOW_CAM_INTERPOLATION_FACTOR` is to make the camera to rotate smoothly
      */
     constructor () {
         this.target_obj = undefined;
@@ -70,9 +70,9 @@ PF_FollowCamera.prototype.update = function () {
             .add(_behind); // 3.
 
         // 4. update camera position (inerpolated)
-        const _ix = lerp(this.cam.position.x, this.goal_point.x, this.i_pos);
-        const _iy = lerp(this.cam.position.y, this.goal_point.y, this.i_pos);
-        const _iz = lerp(this.cam.position.z, this.goal_point.z, this.i_pos);
+        const _ix = lerp(this.cam.position.x, this.goal_point.x, PF_Common.FOLLOW_CAM_INTERPOLATION_FACTOR);
+        const _iy = lerp(this.cam.position.y, this.goal_point.y, PF_Common.FOLLOW_CAM_INTERPOLATION_FACTOR);
+        const _iz = lerp(this.cam.position.z, this.goal_point.z, PF_Common.FOLLOW_CAM_INTERPOLATION_FACTOR);
         this.cam.position.set(_ix, _iy, _iz);
 
         // 5. update camera rotation
