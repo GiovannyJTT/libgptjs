@@ -5,6 +5,7 @@
 
 import * as THREE from "three"
 import { lerp } from "three/src/math/MathUtils";
+import PF_Common from "./PF_Common";
 
 class PF_FollowCamera {
     /**
@@ -14,8 +15,8 @@ class PF_FollowCamera {
      * @property {PF_FollowCamera} `cam_handler` Object that will control the movement of the camera
      * @property {THREE.Vector3} `goal_point` position where the camera has to move in order follow the `target_obj`, pointing in the same `direction`
      * taking into accoun the current rotation of the target_obj and keep the `radial_dist`
-     * @property {Float} `radial_dist` (default 150) distance to keep between camera and target_obj
-     * @property {Float} `i_pos` (default 0.05) interpolation factor in range `[0.0, 1.0]` to update the camera-position every frame.
+     * @property {Float} `PF_Common.FOLLOW_CAM_RADIAL_DISTANCE` (default 150) distance to keep between camera and target_obj
+     * @property {Float} `PF_Common.FOLLOW_CAM_INTERPOLATION_FACTOR` (default 0.05) interpolation factor in range `[0.0, 1.0]` to update the camera-position every frame.
      * The `update()` method of this class is commonly calle at 60 fps, so the value of `i_pos` is to make the camera to rotate smoothly
      */
     constructor () {
@@ -23,8 +24,6 @@ class PF_FollowCamera {
         this.cam = undefined;
         this.cam_handler = undefined;        
         this.goal_point = new THREE.Vector3();
-        this.radial_dist = 150;
-        this.i_pos = 0.05;
     }
 };
 
@@ -64,7 +63,7 @@ PF_FollowCamera.prototype.update = function () {
     if (undefined !== this.target_obj) {        
 
         const _behind = new THREE.Vector3(0.5, 0, 1)
-            .multiplyScalar(this.radial_dist) // 1.
+            .multiplyScalar(PF_Common.FOLLOW_CAM_RADIAL_DISTANCE) // 1.
             .applyEuler(this.target_obj.rotation) // 2.
 
         this.goal_point = new THREE.Vector3().copy(this.target_obj.position)
