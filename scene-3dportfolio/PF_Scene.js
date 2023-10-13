@@ -271,8 +271,7 @@ PF_Scene.prototype.createLights = function () {
     }
 
     // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
-    const pldist = PF_Common.UFO_POS_Y_MIN;
-    const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 30, pldist, 2);
+    const lPoint = new THREE.PointLight(new THREE.Color(0xbfbfbf), 30, PF_Common.UFO_POS_Y_MIN, 2);
 
     lPoint.position.set(0, 1.5 * PF_Common.UFO_POS_Y_MIN, 0);
     this.gpt_lights.set("lPoint_ufo", lPoint);
