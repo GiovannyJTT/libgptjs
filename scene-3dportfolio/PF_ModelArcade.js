@@ -67,10 +67,10 @@ PF_ModelArcade.prototype.adapt_to_scene = function (obj_) {
 }
 
 /**
- * - Calculates the position of the arcade-object close to the wp-country coords and stores them into `this.pos_per_wp`
- * - The displacement is to make the arcade-screen to be focused by the follow-camera when the drone is landing
- *      - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by two 3D-points on the ground
- *      that touch the wp-country. (The 3D-points of this curve-on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
+ * - For each wp-country: it calculates the position of the arcade-object close to the wp-country and stores them into `this.pos_per_wp`
+ * - A displacement is added to make the arcade-screen to be focused by the follow-camera when the drone is landing
+ * - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by the 3D-points that are close to the wp-country
+ *  on the ground. (The 3D-points of this curve on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
  */
 PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
     this.pos_per_wp = [];
@@ -94,23 +94,15 @@ PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
 }
 
 /**
- * - Places the ARCADE-object close to the wp-country (`segment.wp_end.wp_index`)
- * - This object shows information (pictures) on its screen and the user can swipe forward or backwards with 2 buttons
- * - This object keeps facing the camera
- * @param {Dictionary} wp_segment Example:
- * ```json
- * {
- *  wp_start: {name: "VALENCIA", coords: {x: -204.4, y: 366.6}, date: "2017-March", wp_index: 0},
- *  wp_end: {name: "HELSINKI", coords: {x: 343.3, y: -244.4}, date: "2019-March", wp_index: 1}
- * }
- * ```
+ * - Places the ARCADE-object close to the wp-country
+ * @param {Int} wp_index index of the waypoint-country where to place this object 
  */
-PF_ModelArcade.prototype.place_at_wp = function (wp_segment) {
+PF_ModelArcade.prototype.place_at_wp = function (wp_index) {
     if (undefined === this.arcade_obj){
         return;
     }
 
-    const pos = this.pos_per_wp[ wp_segment.wp_end.wp_index ];
+    const pos = this.pos_per_wp[wp_index];
     this.arcade_obj.position.set(pos.x, pos.y, pos.z);
 }
 
