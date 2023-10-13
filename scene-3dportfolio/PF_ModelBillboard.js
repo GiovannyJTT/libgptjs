@@ -149,7 +149,7 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
 /**
  * - Places the billboard-object at a point between current and next waypoint-country in order to show
  * information on the panel while the drone is reaching the next target-waypoint
- * @param {Dictionary} wp_segment 
+ * @param {Int} wp_index index of the waypoint-country where to place this object 
  */
 PF_ModelBillboard.prototype.place_at_wp = function (wp_index) {
     if (undefined === this.billboard_obj){
