@@ -71,6 +71,7 @@ PF_ModelArcade.prototype.adapt_to_scene = function (obj_) {
  * - A displacement is added to make the arcade-screen to be focused by the follow-camera when the drone is landing
  * - The displacement-vector `(1.125, 0, -0.5)` is based on the curve-spline formed by the 3D-points that are close to the wp-country
  *  on the ground. (The 3D-points of this curve on-ground are set at `PF_ModelFlightPath.prototype.get_waypoints`)
+ * @property {THREE.Vector3} this.size final size (bounding box) of the object after scaling
  */
 PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
     this.pos_per_wp = [];

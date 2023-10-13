@@ -109,6 +109,7 @@ PF_ModelBillboard.prototype.adapt_to_scene = function (obj_) {
  *  the follow-camera while landing:
  * ```json
  *  {name: "INIT", coords: {x: -900, y: 1200}, date: "0000-00-00", wp_index: -1}
+ * @property {THREE.Vector3} this.size final size (bounding box) of the object after scaling
  * ```
  */
 PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
