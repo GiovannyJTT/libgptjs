@@ -29,6 +29,7 @@ PF_ModelArcade.prototype.load_mat = function () {
         function on_loaded (obj_) {
             this.adapt_to_scene(obj_);
             this.calc_pos_per_wp_country();
+            this.attach_light();
 
             // call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.arcade_obj);
@@ -92,6 +93,15 @@ PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
         const final_pos = pos_at_wp.add(disp);
         this.pos_per_wp.push(final_pos);
     }
+}
+
+PF_ModelArcade.prototype.attach_light = function () {
+    const dist = this.size.y / 1.5;
+    // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
+    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 150, dist, 2);
+    lp.position.set(0, -2*dist, dist);
+    // fixed attachment
+    this.arcade_obj.add(lp);
 }
 
 /**
