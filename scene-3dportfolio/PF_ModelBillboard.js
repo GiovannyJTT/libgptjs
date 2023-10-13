@@ -57,6 +57,7 @@ PF_ModelBillboard.prototype.load_obj = function (mats_) {
         function on_loaded_sequence (obj_) {
             this.adapt_to_scene(obj_);
             this.calc_pos_per_wp_country();
+            this.attach_light();
 
             // 3. call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.billboard_obj);
@@ -145,6 +146,20 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
         const final_pos = end_pos.sub(disp);
         this.pos_per_wp.push(final_pos);
     }
+}
+
+PF_ModelBillboard.prototype.attach_light = function () {
+    const dist = this.size.x;
+    // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
+    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 6, dist, 2);
+    const pos_scaled = new THREE.Vector3(
+        0,
+        0.5,
+        0.5
+    );
+    lp.position.set(pos_scaled.x, pos_scaled.y, pos_scaled.z);
+    // fixed attachment
+    this.billboard_obj.add(lp);
 }
 
 /**
