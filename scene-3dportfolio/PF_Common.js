@@ -120,10 +120,10 @@ function imgcoords_to_worldspace (img_coords) {
 }
 
 const FPATH_WPS = [
-    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March"},
-    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March"},
-    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July"},
-    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-November"}
+    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March", wp_index: 0},
+    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March", wp_index: 1},
+    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July", wp_index: 2},
+    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-November", wp_index: 3}
 ]
 console.debug(FPATH_WPS);
 
