@@ -164,6 +164,9 @@ PF_Scene.prototype.createUFO = function () {
 
 PF_Scene.prototype.createBillboard = function () {
     const _on_loaded_ok = function (billboard_obj_) {
+        console.debug("billboard_obj:");
+        console.debug(billboard_obj_);
+
         this.AddModelToScene("billboard", billboard_obj_);
     }.bind(this);
     this.m_billboard = new PF_ModelBillboard(_on_loaded_ok);
