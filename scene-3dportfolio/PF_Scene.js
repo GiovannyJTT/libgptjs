@@ -203,15 +203,15 @@ PF_Scene.prototype.updateUFO = function (ms) {
 
 PF_Scene.prototype.updateBillboard = function (ms) {
     if (undefined !== this.m_drone.drone_obj) {
-        this.m_billboard.place_at_wp( this.m_drone.get_waypoints_segment() );
-        this.m_billboard.face_to( this.m_drone.drone_obj.position );
+        this.m_billboard.place_at_wp(this.m_drone.get_wp_country_index());
+        this.m_billboard.face_to(this.m_drone.drone_obj.position);
     }
 }
 
 PF_Scene.prototype.updateArcade = function (ms) {
     if (undefined !== this.m_drone.drone_obj) {
-        this.m_arcade.place_at_wp( this.m_drone.get_waypoints_segment() );
-        this.m_arcade.face_to( this.fc.cam.position );
+        this.m_arcade.place_at_wp(this.m_drone.get_wp_country_index());
+        this.m_arcade.face_to(this.fc.cam.position);
     }
 }
 
