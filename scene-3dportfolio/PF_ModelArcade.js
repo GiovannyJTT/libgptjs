@@ -6,6 +6,7 @@
 import PF_Common from "./PF_Common";
 import {FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import * as THREE from "three";
+import { lerp } from "three/src/math/MathUtils";
 
 class PF_ModelArcade {
     /**
@@ -15,6 +16,7 @@ class PF_ModelArcade {
      */
     constructor (on_loaded_external_cb) {
         this.on_loaded_external_cb = on_loaded_external_cb;
+        this.prev_lookat_pos = new THREE.Vector3(0,0,0);
 
         // start loading model.obj
         this.load_mat();
@@ -121,8 +123,18 @@ PF_ModelArcade.prototype.face_to = function (lookat_pos) {
     if (undefined === this.arcade_obj) {
         return;
     }
+    
     const pos = new THREE.Vector3(lookat_pos.x, this.arcade_obj.position.y, lookat_pos.z);
-    this.arcade_obj.lookAt(pos);
+
+    const i_pos = new THREE.Vector3(
+        lerp(this.prev_lookat_pos.x, pos.x, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS),
+        lerp(this.prev_lookat_pos.y, pos.y, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS),
+        lerp(this.prev_lookat_pos.z, pos.z, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS)
+    );
+
+    this.arcade_obj.lookAt(i_pos);
+    this.prev_lookat_pos = i_pos;
+
     // fix rotation
     this.arcade_obj.rotateX(-Math.PI / 2);
 }

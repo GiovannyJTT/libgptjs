@@ -285,13 +285,14 @@ PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
     if (undefined === this.billboard_obj){
         return;
     }
+    
     const pos = new THREE.Vector3(lookat_pos.x, this.billboard_obj.position.y, lookat_pos.z);
 
     // apply interpolation for smooth rotation
     const i_pos = new THREE.Vector3(
-        lerp(this.prev_lookat_pos.x, pos.x, 0.0375),
-        lerp(this.prev_lookat_pos.y, pos.y, 0.0375),
-        lerp(this.prev_lookat_pos.z, pos.z, 0.0375)        
+        lerp(this.prev_lookat_pos.x, pos.x, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS),
+        lerp(this.prev_lookat_pos.y, pos.y, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS),
+        lerp(this.prev_lookat_pos.z, pos.z, PF_Common.INTERPOLATION_FACTOR_FOR_60_FPS)
     );
 
     this.billboard_obj.lookAt(i_pos);
