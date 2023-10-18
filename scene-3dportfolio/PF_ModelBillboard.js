@@ -246,10 +246,10 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     // 3. Create material: front (opaque) + side (glass)
     const mat_glass = new THREE.MeshPhongMaterial(
         {
-            color: 0xe5ffe5,
-            emissive: 0x111111,
-            flatShading: false, // initially SMOOTH transition between normals
-            specular: 0x003300,
+            color: 0x351F39,
+            emissive: 0x222222,
+            flatShading: true, // per-triangle normal, not smooth transition between triangles
+            specular: 0xA0C1B8,
             shininess: 70,
             side: THREE.FrontSide,
             transparent: true,
@@ -260,11 +260,11 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
 
     const mat_opaque = new THREE.MeshBasicMaterial(
         {
-            color: 0xe5ffe5,
-            emissive: 0x111111,
-            flatShading: false,
-            specular: 0x003300,
-            shininess: 20,
+            color: 0x351F39,
+            emissive: 0x222222,
+            flatShading: true,
+            specular: 0xA0C1B8,
+            shininess: 70,
             side: THREE.FrontSide,
             transparent: false,
             envMap: PF_Common.SKYBOX_CUBE_TEXTURE
