@@ -7,6 +7,9 @@ import PF_Common from "./PF_Common";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from "three";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import * as helvetiker_regular from "three/examples/fonts/helvetiker_regular.typeface.json"
 
 class PF_ModelBillboard {
     /**
@@ -16,6 +19,7 @@ class PF_ModelBillboard {
      */
     constructor (on_loaded_external_cb) {
         this.on_loaded_external_cb = on_loaded_external_cb;
+        this.prev_wp_index = undefined;
 
         // start loading the model.obj
         this.load_mat();
@@ -165,15 +169,114 @@ PF_ModelBillboard.prototype.attach_light = function () {
 /**
  * - Places the BILLBOARD-object at a point between current and next waypoint-country in order to show
  * information on the panel while the drone is reaching the next target-waypoint
- * @param {Int} wp_index index of the waypoint-country where to place this object 
+ * @param {Int} wp_index index of the waypoint-country where to place this object
+ * @param {Function} on_waypoint_changed_cb callback to be executed when detected that the waypoint-country index changed between frames.
+ *  This callback commonly removes the previous text3d_mesh from the scene and adds the new one just created
  */
-PF_ModelBillboard.prototype.place_at_wp = function (wp_index) {
+PF_ModelBillboard.prototype.place_at_wp = function (wp_index, on_waypoint_changed_cb_) {
     if (undefined === this.billboard_obj){
         return;
     }
 
     const pos = this.pos_per_wp[wp_index];
     this.billboard_obj.position.set(pos.x, pos.y, pos.z);
+
+    // wp hasn't changed
+    if (this.prev_wp_index === wp_index) {
+        return;
+    }
+
+    // wp just changed
+    this.create_text3d(wp_index, on_waypoint_changed_cb_);
+}
+
+/**
+ * Creates a new text-3D `only` when the waypoint-country location changes (when `wp_index` changes
+ * between frames)
+ * @param {Int} wp_index waypoint-country index
+ * @param {Function} on_waypoint_changed_cb callback to be executed when detected that the waypoint-country index has changed between frames.
+ *  This callback commonly removes the previous `text3d_mesh` from the scene and adds the new one
+ * @property {Font} this.font font to be extruded as text-3D
+ * @property {THREE.Mesh} this.text3d_mesh Mesh Object of the text-3D after scaling and positioning
+ * @property {Int} this.prev_wp_index waypoint-country index in the previous frame
+ */
+PF_ModelBillboard.prototype.create_text3d = function (wp_index, on_waypoint_changed_cb_) {
+    console.debug("create_text3d: wp_index: " + wp_index);
+
+    const fl = new FontLoader();
+    this.font = fl.parse(helvetiker_regular);
+    this.text3d_mesh = this.get_text3d_mesh(wp_index);
+    on_waypoint_changed_cb_.call(this, this.text3d_mesh);    
+    this.prev_wp_index = wp_index;
+}
+
+/**
+ * Creates text mesh (text geometry + text material)
+ * 1. It configures the string-content of the text: wp.name + wp.date
+ * 2. Sets text-3D size, height, position, orientation, etc., to be placed on the billboard-panel
+ * 3. Sets material: front (opaque) and size (transparent glass). The glass material uses the skybox to simnulate reflections
+ * @param {Int} wp_index waypoint-country index needed to set the string-content (wp.name + wp.date)
+ * @returns {THREE.Mesh} Final mesh to be included into the webgl.scene
+ */
+PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
+    // 1. string-content
+    const content_str = PF_Common.FPATH_WPS[wp_index].name + " - " + PF_Common.FPATH_WPS[wp_index].date;
+
+    const text_geom = new TextGeometry(
+        content_str,
+        {
+            font: this.font,
+            size: 40,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 10,
+            bevelSize: 8,
+            bevelOffset: 0,
+            bevelSegments: 5
+        }
+    );
+
+    // 2. Place on the billboard-panel
+    // text_geom.computeBoundingBox();
+    // text_geom.center();
+
+    // 3. Create material: front (opaque) + side (glass)
+    const mat_glass = new THREE.MeshPhongMaterial(
+        {
+            color: 0xe5ffe5,
+            emissive: 0x111111,
+            flatShading: false, // initially SMOOTH transition between normals
+            specular: 0x003300,
+            shininess: 70,
+            side: THREE.FrontSide,
+            transparent: true,
+            opacity: 0.75,
+            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
+        }
+    );
+
+    const mat_opaque = new THREE.MeshBasicMaterial(
+        {
+            color: 0xe5ffe5,
+            emissive: 0x111111,
+            flatShading: false,
+            specular: 0x003300,
+            shininess: 20,
+            side: THREE.FrontSide,
+            transparent: false,
+            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
+        }
+    );
+
+    const text_mat = [];
+    // front
+    text_mat.push(mat_opaque);
+    // side
+    text_mat.push(mat_glass);
+
+    const text_mesh = new THREE.Mesh(text_geom, text_mat);
+    return text_mesh;
 }
 
 PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
