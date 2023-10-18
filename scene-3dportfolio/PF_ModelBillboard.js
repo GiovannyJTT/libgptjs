@@ -7,6 +7,7 @@ import PF_Common from "./PF_Common";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from "three";
+import { lerp } from "three/src/math/MathUtils";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import * as helvetiker_regular from "three/examples/fonts/helvetiker_regular.typeface.json"
@@ -20,6 +21,7 @@ class PF_ModelBillboard {
     constructor (on_loaded_external_cb) {
         this.on_loaded_external_cb = on_loaded_external_cb;
         this.prev_wp_index = undefined;
+        this.prev_lookat_pos = new THREE.Vector3(0,0,0);
 
         // start loading the model.obj
         this.load_mat();
@@ -284,7 +286,16 @@ PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
         return;
     }
     const pos = new THREE.Vector3(lookat_pos.x, this.billboard_obj.position.y, lookat_pos.z);
-    this.billboard_obj.lookAt(pos);
+
+    // apply interpolation for smooth rotation
+    const i_pos = new THREE.Vector3(
+        lerp(this.prev_lookat_pos.x, pos.x, 0.0375),
+        lerp(this.prev_lookat_pos.y, pos.y, 0.0375),
+        lerp(this.prev_lookat_pos.z, pos.z, 0.0375)        
+    );
+
+    this.billboard_obj.lookAt(i_pos);
+    this.prev_lookat_pos = i_pos;
 }
 
 
