@@ -125,7 +125,8 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
         return;
     }
 
-    let wps = PF_Common.FPATH_WPS;
+    // slice clones the array, we dont want to modify the original
+    let wps = PF_Common.FPATH_WPS.slice(0);
     wps.unshift(
         {name: "INIT", coords: {x: -900, y: 1200}, date: "0000-00-00", wp_index: -1}
     );
