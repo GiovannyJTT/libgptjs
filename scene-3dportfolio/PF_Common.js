@@ -3,6 +3,8 @@
  * @constant PF_Common constant values of 3DPorfolio project
  */
 
+import * as THREE from "three"
+
 // config container for hmtl content
 const CONTAINER_HTML_ID= "container-for-html";
 const css_root = document.querySelector(":root");
@@ -44,6 +46,12 @@ const SKYBOX_TEXTURE_IMAGE_PATHS = []
 for(let i=0; i < SKYBOX_TEXTURE_IMAGES_NAMES.length; i++) {
     SKYBOX_TEXTURE_IMAGE_PATHS.push(SKYBOX_TEXTURE_PATH + SKYBOX_TEXTURE_IMAGES_NAMES[i]);
 }
+
+// SKYBOX_CUBE to be reused in several places
+const _texLoader = new THREE.CubeTextureLoader();
+_texLoader.setPath(SKYBOX_TEXTURE_PATH);
+const SKYBOX_CUBE_TEXTURE = _texLoader.load(SKYBOX_TEXTURE_IMAGES_NAMES);
+SKYBOX_CUBE_TEXTURE.isCubeTexture = true;
 
 // DRONE CONFIG
 const DRONE_OBJ_PATH = "./assets/models/drone-lowpoly/model.obj";
@@ -258,6 +266,7 @@ export default {
     FLOOR_NORMAL_MAP_PATH,
     SKYBOX_TEXTURE_PATH,
     SKYBOX_TEXTURE_IMAGE_PATHS,
+    SKYBOX_CUBE_TEXTURE,
     UFO_OBJ_PATH,
     UFO_MTL_PATH,
     UFO_SCALE,
