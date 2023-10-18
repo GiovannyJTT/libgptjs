@@ -81,7 +81,7 @@ PF_ModelUFO.prototype.adapt_to_scene = function (obj_) {
 /**
  * per-frame update
  */
-PF_ModelUFO.prototype.fly_on_sky = function (ms) {
+PF_ModelUFO.prototype.fly_up_and_down = function (ms) {
     if(undefined === this.ufo_obj) {
         return;
     }

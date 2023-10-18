@@ -201,7 +201,7 @@ PF_Scene.prototype.updateDrone = function (ms) {
 }
 
 PF_Scene.prototype.updateUFO = function (ms) {
-    this.m_ufo.fly_on_sky(ms);
+    this.m_ufo.fly_up_and_down(ms);
 }
 
 PF_Scene.prototype.updateBillboard = function (ms) {
