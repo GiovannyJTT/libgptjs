@@ -206,7 +206,17 @@ PF_Scene.prototype.updateUFO = function (ms) {
 
 PF_Scene.prototype.updateBillboard = function (ms) {
     if (undefined !== this.m_drone.drone_obj) {
-        this.m_billboard.place_at_wp(this.m_drone.get_wp_country_index());
+
+        const on_waypoint_changed_cb_ = function (text3d_mesh_) {
+            // remove previous text3d
+            if (this.gpt_models.get("text3d") !== undefined) {
+                this.removeModelFromScene("text3d");
+            }
+            // add new text3d
+            this.AddModelToScene("text3d", text3d_mesh_);
+        }.bind(this);
+
+        this.m_billboard.place_at_wp(this.m_drone.get_wp_country_index(), on_waypoint_changed_cb_);
         this.m_billboard.face_to(this.m_drone.drone_obj.position);
     }
 }
