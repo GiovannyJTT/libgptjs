@@ -184,12 +184,26 @@ PF_ModelBillboard.prototype.place_at_wp = function (wp_index, on_waypoint_change
     const pos = this.pos_per_wp[wp_index];
     this.billboard_obj.position.set(pos.x, pos.y, pos.z);
 
-    // wp hasn't changed
+    // update text3D if exits
+    if (this.text3d_mesh !== undefined) {
+        this.text3d_mesh.position.set(
+            this.billboard_obj.position.x,
+            this.billboard_obj.position.y + (this.size.y / 4),
+            this.billboard_obj.position.z
+        );
+        this.text3d_mesh.rotation.set(
+            this.billboard_obj.rotation.x,
+            this.billboard_obj.rotation.y,
+            this.billboard_obj.rotation.z
+        );
+    }
+
+    // wp hasn't changed between frames yet
     if (this.prev_wp_index === wp_index) {
         return;
     }
 
-    // wp just changed
+    // wp has changed: create new text3D
     this.create_text3d(wp_index, on_waypoint_changed_cb_);
 }
 
@@ -216,40 +230,36 @@ PF_ModelBillboard.prototype.create_text3d = function (wp_index, on_waypoint_chan
 /**
  * Creates text mesh (text geometry + text material)
  * 1. It configures the string-content of the text: wp.name + wp.date
- * 2. Sets text-3D size, height, position, orientation, etc., to be placed on the billboard-panel
- * 3. Sets material: front (opaque) and size (transparent glass). The glass material uses the skybox to simnulate reflections
+ * 2. Sets material: front (opaque) and size (transparent glass). The glass material uses the skybox to simnulate reflections
+ * 3. Sets text-3D size, height, position, orientation, etc., to be placed on the billboard-panel
  * @param {Int} wp_index waypoint-country index needed to set the string-content (wp.name + wp.date)
  * @returns {THREE.Mesh} Final mesh to be included into the webgl.scene
  */
 PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     // 1. string-content
-    const content_str = PF_Common.FPATH_WPS[wp_index].name + " - " + PF_Common.FPATH_WPS[wp_index].date;
+    const content_str = PF_Common.FPATH_WPS[wp_index].name + "\n" + PF_Common.FPATH_WPS[wp_index].date;
 
-    const text_geom = new TextGeometry(
+    const tgeom = new TextGeometry(
         content_str,
         {
             font: this.font,
-            size: 40,
-            height: 5,
+            size: 15,
+            height: this.size.z * 0.75,
             curveSegments: 12,
             bevelEnabled: true,
-            bevelThickness: 10,
-            bevelSize: 8,
+            bevelThickness: 2,
+            bevelSize: 1.5,
             bevelOffset: 0,
             bevelSegments: 5
         }
     );
 
-    // 2. Place on the billboard-panel
-    // text_geom.computeBoundingBox();
-    // text_geom.center();
-
-    // 3. Create material: front (opaque) + side (glass)
-    const mat_glass = new THREE.MeshPhongMaterial(
+    // 2. Create material: front (opaque) + side (glass)
+    const mat_shinny_blue = new THREE.MeshBasicMaterial(
         {
             color: 0x351F39,
             emissive: 0x222222,
-            flatShading: true, // per-triangle normal, not smooth transition between triangles
+            flatShading: true,
             specular: 0xA0C1B8,
             shininess: 70,
             side: THREE.FrontSide,
@@ -259,11 +269,11 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
         }
     );
 
-    const mat_opaque = new THREE.MeshBasicMaterial(
+    const mat_shinny_purple = new THREE.MeshPhongMaterial(
         {
-            color: 0x351F39,
+            color: 0x726A95,
             emissive: 0x222222,
-            flatShading: true,
+            flatShading: true, // per-triangle normal, not smooth transition between triangles
             specular: 0xA0C1B8,
             shininess: 70,
             side: THREE.FrontSide,
@@ -272,14 +282,23 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
         }
     );
 
-    const text_mat = [];
+    const tmat = [];
     // front
-    text_mat.push(mat_opaque);
+    tmat.push(mat_shinny_blue);
     // side
-    text_mat.push(mat_glass);
+    tmat.push(mat_shinny_purple);
 
-    const text_mesh = new THREE.Mesh(text_geom, text_mat);
-    return text_mesh;
+    const tmesh = new THREE.Mesh(tgeom, tmat);
+
+    // 3. Place on the billboard-panel
+    // recenter geometry
+    tmesh.geometry.computeBoundingBox();
+    tmesh.geometry.center();
+    const _offset_x = -0.5 * (tmesh.geometry.boundingBox.max.x - tmesh.geometry.boundingBox.min.x);
+    const _offset_y = -0.5 * (tmesh.geometry.boundingBox.max.y - tmesh.geometry.boundingBox.min.y);
+    tmesh.position.set(_offset_x, _offset_y, 0);
+
+    return tmesh;
 }
 
 PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
