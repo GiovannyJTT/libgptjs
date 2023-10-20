@@ -162,21 +162,20 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
 PF_ModelBillboard.prototype.attach_light_to_billboard = function () {
     const dist = this.size.x;
     // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
-    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 6, dist, 2);
+    const pl = new THREE.PointLight(new THREE.Color(0xbfbfbf), 6, dist, 2);
     const pos_scaled = new THREE.Vector3(
         0,
         0.5,
         0.5
     );
-    lp.position.set(pos_scaled.x, pos_scaled.y, pos_scaled.z);
+    pl.position.set(pos_scaled.x, pos_scaled.y, pos_scaled.z);
 
     // enable casting shadows
-    lp.castShadow = true;
-    lp.shadow.camera.near = 0.1;
-    lp.shadow.camera.far = 1.5 * dist;
+    pl.castShadow = true;
+    pl.shadow.radius = dist;
 
     // fixed attachment
-    this.billboard_obj.add(lp);
+    this.billboard_obj.add(pl);
 }
 
 /**
@@ -306,7 +305,7 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     tmesh.position.set(_offset_x, _offset_y, 0);
 
     // enable casting shadows over the billboard-panel
-    tmesh.castShadow = true;
+    tmesh.castShadow = false;
 
     return tmesh;
 }
