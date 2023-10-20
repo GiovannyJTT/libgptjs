@@ -282,8 +282,7 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
             specular: 0xA0C1B8,
             shininess: 70,
             side: THREE.FrontSide,
-            transparent: true,
-            opacity: 0.8,
+            transparent: false,
             envMap: PF_Common.SKYBOX_CUBE_TEXTURE
         }
     );
