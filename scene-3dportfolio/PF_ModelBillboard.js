@@ -264,7 +264,7 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     const mat_shinny_blue = new THREE.MeshBasicMaterial(
         {
             color: 0x351F39,
-            emissive: 0x222222,
+            emissive: 0x133c47,
             flatShading: true,
             specular: 0xA0C1B8,
             shininess: 70,
@@ -278,7 +278,7 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     const mat_shinny_purple = new THREE.MeshPhongMaterial(
         {
             color: 0x726A95,
-            emissive: 0x222222,
+            emissive: 0x133c47,
             flatShading: true, // per-triangle normal, not smooth transition between triangles
             specular: 0xA0C1B8,
             shininess: 70,
