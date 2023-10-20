@@ -235,7 +235,7 @@ PF_Scene.prototype.updateArcade = function (ms) {
  */
 PF_Scene.prototype.createLights = function () {
     // Ambient-Light: is added when shading the models surfaces. 5% white light (almost black), doesnt need position.
-    const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 1.0);
+    const lAmbient = new THREE.AmbientLight(new THREE.Color(0x0d0d0d), 2);
     this.gpt_lights.set("lAmbient", lAmbient);
    
     // Directional-Light: emits only in the configured direction vector. 75% white light.
