@@ -63,7 +63,7 @@ PF_ModelBillboard.prototype.load_obj = function (mats_) {
         function on_loaded_sequence (obj_) {
             this.adapt_to_scene(obj_);
             this.calc_pos_per_wp_country();
-            this.attach_light();
+            this.attach_light_to_billboard();
 
             // 3. call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.billboard_obj);
@@ -94,6 +94,10 @@ PF_ModelBillboard.prototype.adapt_to_scene = function (obj_) {
     // initially at origin, it will be moved to its position when first update()
     this.billboard_obj.position.set(0, 0, 0);
 
+    // enable receiving shadows on billboard from text3d
+    this.billboard_obj.traverse(function(child){child.receiveShadows = true;});
+
+    // bounding box
     const _bb = new THREE.Box3().setFromObject(this.billboard_obj);
     this.size = new THREE.Vector3();
     _bb.getSize(this.size);
@@ -155,7 +159,7 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
     }
 }
 
-PF_ModelBillboard.prototype.attach_light = function () {
+PF_ModelBillboard.prototype.attach_light_to_billboard = function () {
     const dist = this.size.x;
     // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
     const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 6, dist, 2);
@@ -165,6 +169,12 @@ PF_ModelBillboard.prototype.attach_light = function () {
         0.5
     );
     lp.position.set(pos_scaled.x, pos_scaled.y, pos_scaled.z);
+
+    // enable casting shadows
+    lp.castShadow = true;
+    lp.shadow.camera.near = 0.1;
+    lp.shadow.camera.far = 1.5 * dist;
+
     // fixed attachment
     this.billboard_obj.add(lp);
 }
@@ -218,10 +228,7 @@ PF_ModelBillboard.prototype.place_at_wp = function (wp_index, on_waypoint_change
  * @property {Int} this.prev_wp_index waypoint-country index in the previous frame
  */
 PF_ModelBillboard.prototype.create_text3d = function (wp_index, on_waypoint_changed_cb_) {
-    console.debug("create_text3d: wp_index: " + wp_index);
-
-    const fl = new FontLoader();
-    this.font = fl.parse(helvetiker_regular);
+    this.font = new FontLoader().parse(helvetiker_regular);
     this.text3d_mesh = this.get_text3d_mesh(wp_index);
     on_waypoint_changed_cb_.call(this, this.text3d_mesh);    
     this.prev_wp_index = wp_index;
@@ -243,7 +250,7 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
         content_str,
         {
             font: this.font,
-            size: 15,
+            size: 20,
             height: this.size.z * 0.75,
             curveSegments: 12,
             bevelEnabled: true,
@@ -297,6 +304,9 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
     const _offset_x = -0.5 * (tmesh.geometry.boundingBox.max.x - tmesh.geometry.boundingBox.min.x);
     const _offset_y = -0.5 * (tmesh.geometry.boundingBox.max.y - tmesh.geometry.boundingBox.min.y);
     tmesh.position.set(_offset_x, _offset_y, 0);
+
+    // enable casting shadows over the billboard-panel
+    tmesh.castShadow = true;
 
     return tmesh;
 }
