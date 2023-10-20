@@ -253,33 +253,19 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
             height: this.size.z * 0.75,
             curveSegments: 12,
             bevelEnabled: true,
-            bevelThickness: 2,
-            bevelSize: 1.5,
+            bevelThickness: 5,
+            bevelSize: 2,
             bevelOffset: 0,
             bevelSegments: 5
         }
     );
 
     // 2. Create material: front (opaque) + side (glass)
-    const mat_shinny_blue = new THREE.MeshBasicMaterial(
+    const mat_purple = new THREE.MeshBasicMaterial(
         {
             color: 0x351F39,
             emissive: 0x133c47,
             flatShading: true,
-            specular: 0xA0C1B8,
-            shininess: 70,
-            side: THREE.FrontSide,
-            transparent: true,
-            opacity: 0.75,
-            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
-        }
-    );
-
-    const mat_shinny_purple = new THREE.MeshPhongMaterial(
-        {
-            color: 0x726A95,
-            emissive: 0x133c47,
-            flatShading: true, // per-triangle normal, not smooth transition between triangles
             specular: 0xA0C1B8,
             shininess: 70,
             side: THREE.FrontSide,
@@ -288,11 +274,25 @@ PF_ModelBillboard.prototype.get_text3d_mesh = function (wp_index) {
         }
     );
 
+    const mat_blue = new THREE.MeshPhongMaterial(
+        {
+            color: 0x726A95,
+            emissive: 0x133c47,
+            flatShading: true, // per-triangle normal, not smooth transition between triangles
+            specular: 0xA0C1B8,
+            shininess: 70,
+            side: THREE.FrontSide,
+            transparent: true,
+            opacity: 0.8,
+            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
+        }
+    );
+
     const tmat = [];
     // front
-    tmat.push(mat_shinny_blue);
+    tmat.push(mat_purple);
     // side
-    tmat.push(mat_shinny_purple);
+    tmat.push(mat_blue);
 
     const tmesh = new THREE.Mesh(tgeom, tmat);
 
