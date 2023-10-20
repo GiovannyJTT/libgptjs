@@ -55,6 +55,8 @@ PF_Scene.prototype.get_cam_handler = function (cam_, webgl_dom_element_) {
  * Overrides createObjects funtion in child object
  */
 PF_Scene.prototype.createObjects = function () {
+    this.scene.fog = new THREE.Fog(0xcccccc, 0.4 * PF_Common.SKYBOX_WIDTH, 1.1 * PF_Common.SKYBOX_WIDTH);
+
     this.createAxes();
     this.createFloor();
     this.createSkybox();
