@@ -327,5 +327,4 @@ PF_ModelBillboard.prototype.face_to = function (lookat_pos) {
     this.prev_lookat_pos = i_pos;
 }
 
-
 export default PF_ModelBillboard
