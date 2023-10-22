@@ -127,11 +127,18 @@ function imgcoords_to_worldspace (img_coords) {
     return ws;
 }
 
+// Pictures to be shown for each wp-country
+const PICTURES_DISPLAY_TEMPLATE = "./assets/images/pictures/grid_dev_512x512_orange.jpg";
+const PICTURES_VALENCIA = [];
+const PICTURES_HELSINKI = [];
+const PICTURES_ODENSE = [];
+const PICTURES_OSLO = [];
+
 const FPATH_WPS = [
-    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March", wp_index: 0},
-    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March", wp_index: 1},
-    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July", wp_index: 2},
-    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-Nov", wp_index: 3}
+    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March", wp_index: 0, pictures: PICTURES_VALENCIA},
+    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March", wp_index: 1, pictures: PICTURES_HELSINKI},
+    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July", wp_index: 2, pictures: PICTURES_ODENSE},
+    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-Nov", wp_index: 3, pictures: PICTURES_OSLO}
 ]
 console.debug(FPATH_WPS);
 
@@ -293,6 +300,7 @@ export default {
     is_speed_normal,
     FPATH_MIN_HEIGHT_MM,
     FPATH_MAX_HEIGHT_MM,
+    PICTURES_DISPLAY_TEMPLATE,
     FPATH_WPS,
     FPATH_WPS_LIGHT_HEIGHT,
     FOLLOW_CAM_RADIAL_DISTANCE,
