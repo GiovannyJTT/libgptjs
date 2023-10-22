@@ -1,6 +1,8 @@
 /**
  * @module libgptjs Graphical Programming with ThreeJS (GPT)
- * @class PF_ModelArcadeScreen
+ * @class `PF_ModelArcade` It gets spawn close the waypoint-country location based
+ * on the current drone position. It faces always the camera so the user can read
+ * properly its content.
  */
 
 import PF_Common from "./PF_Common";
