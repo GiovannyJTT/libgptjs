@@ -9,6 +9,7 @@ import PF_Common from "./PF_Common";
 import {FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import * as THREE from "three";
 import { lerp } from "three/src/math/MathUtils";
+import PF_ModelDisplay from "./PF_ModelDisplay";
 
 class PF_ModelArcade {
     /**
@@ -34,6 +35,8 @@ PF_ModelArcade.prototype.load_mat = function () {
             this.adapt_to_scene(obj_);
             this.calc_pos_per_wp_country();
             this.attach_light();
+            this.attach_display();
+
 
             // call external callback to add model to scene
             this.on_loaded_external_cb.call(this, this.arcade_obj);
@@ -106,6 +109,11 @@ PF_ModelArcade.prototype.attach_light = function () {
     lp.position.set(0, -2*dist, dist);
     // fixed attachment
     this.arcade_obj.add(lp);
+}
+
+PF_ModelArcade.prototype.attach_display = function () {
+    this.m_display = new PF_ModelDisplay();
+    this.arcade_obj.add(this.m_display.mesh);
 }
 
 /**
