@@ -29,6 +29,16 @@ class PF_ModelDisplay {
     }
 }
 
+/**
+ * - Creates a mesh (PlaneGeometry + MeshBasicMaterial)
+ * - MeshBasicMaterial is not affected by light, so pictures will be displayed with good quality
+ * - SkyBoxcube is applied as Environment map to simulate reflective screen
+ * @param {Number} width 
+ * @param {Number} height 
+ * @param {Float} inclination_rads 
+ * @param {Number} displacement 
+ * @returns {THREE.Mesh}
+ */
 PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclination_rads, displacement) {
     // geometry
     const geom = new THREE.PlaneGeometry(width, height, 2, 2);
@@ -39,18 +49,13 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(1, 1);
 
-    // attach texture to material
-    const mat = new THREE.MeshPhongMaterial(
+    // attach texture to material. 
+    // NOTE: MeshBasicMaterial is not affected by light
+    const mat = new THREE.MeshBasicMaterial(
         {
-            color: 0xcccccc,
-            emissive: 0x0f0f0f,
-            flatShading: true, // not need to smooth between triangles
-            specular: 0xe6d35e,
-            shininess: 50,
+            color: 0xffffff,
             map: tex,
-            side: THREE.FrontSide,
-            transparent: true,
-            opacity: 0.75
+            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
         }
     );
 
