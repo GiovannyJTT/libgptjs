@@ -4,7 +4,7 @@
  */
 
 import * as THREE from "three"
-import FOLDER_PICTURES from "./PF_Urls";
+import FOLDER_PICTURES from "./PF_CommonUrls";
 
 // config container for hmtl content
 const CONTAINER_HTML_ID= "container-for-html";
