@@ -44,7 +44,7 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     const geom = new THREE.PlaneGeometry(width, height, 2, 2);
 
     // texture: asssuming locally-hosted, load will not fail
-    const tex = new THREE.TextureLoader().load(PF_Common.PICTURES_DISPLAY_TEMPLATE);
+    const tex = new THREE.TextureLoader().load(PF_Common.URL_DISPLAY_TEMPLATE_TEXTURE);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(1, 1);
