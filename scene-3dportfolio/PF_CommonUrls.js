@@ -2,10 +2,10 @@
 const base_path = "./assets/images/pictures/";
 
 const FOLDER_PICTURES = {
-    valencia: [],
-    helsinki: [],
-    odense: [],
-    oslo: []
+    valencia: undefined,
+    helsinki: undefined,
+    odense: undefined,
+    oslo: undefined
 }
 
 Object.entries(FOLDER_PICTURES).forEach(
