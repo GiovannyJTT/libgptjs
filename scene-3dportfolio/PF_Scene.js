@@ -225,8 +225,10 @@ PF_Scene.prototype.updateBillboard = function (ms) {
 
 PF_Scene.prototype.updateArcade = function (ms) {
     if (undefined !== this.m_drone.drone_obj) {
-        this.m_arcade.place_at_wp(this.m_drone.get_wp_country_index());
+        const wp_index = this.m_drone.get_wp_country_index();
+        this.m_arcade.place_at_wp(wp_index);
         this.m_arcade.face_to(this.fc.cam.position);
+        this.m_arcade.m_display.show_picture(wp_index);
     }
 }
 
