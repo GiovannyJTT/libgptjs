@@ -3,8 +3,7 @@
  * @constant PF_Common constant values of 3DPorfolio project
  */
 
-import * as THREE from "three"
-import FOLDER_PICTURES from "./PF_CommonUrls";
+import * as THREE from "three";
 
 // config container for hmtl content
 const CONTAINER_HTML_ID= "container-for-html";
@@ -132,11 +131,25 @@ function imgcoords_to_worldspace (img_coords) {
 const URL_DISPLAY_TEMPLATE_TEXTURE = "./assets/images/pictures/grid_dev_512x512_orange.jpg";
 
 const FPATH_WPS = [
-    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March", wp_index: 0, pictures: FOLDER_PICTURES.valencia},
-    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March", wp_index: 1, pictures: FOLDER_PICTURES.helsinki},
-    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July", wp_index: 2, pictures: FOLDER_PICTURES.odense},
-    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-Nov", wp_index: 3, pictures: FOLDER_PICTURES.oslo}
+    {name: "VALENCIA", coords: FPATH_WP_VALENCIA, date: "2017-March", wp_index: 0},
+    {name: "HELSINKI", coords: FPATH_WP_HELSINKI, date: "2019-March", wp_index: 1},
+    {name: "ODENSE", coords: FPATH_WP_ODENSE, date: "2020-July", wp_index: 2},
+    {name: "OSLO", coords: FPATH_WP_OSLO, date:"2021-Nov", wp_index: 3}
 ]
+
+// attaching pictures paths
+const PICTURES_PER_FOLDER_MAX = 10;
+const base_path = "./assets/images/pictures/";
+FPATH_WPS.forEach(
+    (item) => {
+        let city_img_paths = [];
+        for (let i=0; i < PICTURES_PER_FOLDER_MAX; i++) {
+            city_img_paths.push(base_path + item.name.toLocaleLowerCase() + "/img_" + i.toString().padStart(3, "0") + ".jpg");
+        }
+        item["pictures"] = {paths: city_img_paths, pic_index: 0};
+    }
+);
+
 console.debug(FPATH_WPS);
 
 const FPATH_WPS_LIGHT_HEIGHT = DRONE_BOUNDING_BOX_SIDE * 3
