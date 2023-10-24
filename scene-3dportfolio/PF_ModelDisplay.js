@@ -26,6 +26,9 @@ class PF_ModelDisplay {
      */
     constructor (width = 54, height = 67, inclination_rads = 74.5 * (Math.PI/180), displacement = 8) {
         this.mesh = this.get_display_mesh(width, height, inclination_rads, displacement);
+
+        // init
+        this.last_img_url = undefined;
     }
 }
 
@@ -73,6 +76,42 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     mesh.receiveShadow = false;
 
     return mesh;
+}
+
+PF_ModelDisplay.prototype.set_next_image_index = function (wp_index) {
+    const ps = PF_Common.FPATH_WPS[wp_index].pictures;
+    if (i < ps.paths.length) {
+        ps.pic_index++;
+    }
+}
+
+PF_ModelDisplay.prototype.set_prev_image_index = function (wp_index) {
+    const ps = PF_Common.FPATH_WPS[wp_index].pictures;
+    if (i > 0) {
+        ps.pic_index--;
+    }
+}
+
+PF_ModelDisplay.prototype.get_current_image_url = function (wp_index) {
+    const ps = PF_Common.FPATH_WPS[wp_index].pictures;
+    const url = ps.paths[ps.pic_index];
+    return url;
+}
+
+PF_ModelDisplay.prototype.show_picture = function (wp_index) {
+    const url = this.get_current_image_url(wp_index);
+    if (this.last_img_url === url) {
+        return;
+    }
+
+    // only once
+    this.update_texture(url);
+}
+
+PF_ModelDisplay.prototype.update_texture = function (url) {
+    this.mesh.material.map = new THREE.TextureLoader().load(url)
+    this.mesh.material.needsUpdate = true;
+    this.last_img_url = url;
 }
 
 export default PF_ModelDisplay

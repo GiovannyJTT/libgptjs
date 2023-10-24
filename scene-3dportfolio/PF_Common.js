@@ -144,7 +144,7 @@ FPATH_WPS.forEach(
     (item) => {
         let city_img_paths = [];
         for (let i=0; i < PICTURES_PER_FOLDER_MAX; i++) {
-            city_img_paths.push(base_path + item.name.toLocaleLowerCase() + "/img_" + i.toString().padStart(3, "0") + ".jpg");
+            city_img_paths.push(base_path + item.name.toLocaleLowerCase() + "/pic_" + i.toString().padStart(3, "0") + ".jpg");
         }
         item["pictures"] = {paths: city_img_paths, pic_index: 0};
     }
