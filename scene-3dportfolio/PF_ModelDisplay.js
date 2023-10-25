@@ -166,7 +166,7 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
 }
 
 /**
- * - Centers the image in the middle of the display-plane
+ * - Centers the image in the middle of the display-plane by using the destination-ratio (plane)
  * @param {String} url url path of the image to be loaded as texture
  */
 PF_ModelDisplay.prototype.center_texture = function () {
