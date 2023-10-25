@@ -66,7 +66,7 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     const mat = new THREE.MeshBasicMaterial(
         {
             color: 0xffffff,
-            map: tex,
+            map: this.texture,
             envMap: PF_Common.SKYBOX_CUBE_TEXTURE
         }
     );
@@ -148,7 +148,7 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
 
         function on_loaded_sequence (tex_) {
             this.texture = tex_;
-            this.center_texture(url);
+            this.center_texture();
             // reset flags
             this.loading_texture = false;
             this.last_img_url = url;
@@ -169,23 +169,22 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
  * - Centers the image in the middle of the display-plane
  * @param {String} url url path of the image to be loaded as texture
  */
-PF_ModelDisplay.prototype.center_texture = function (url) {
+PF_ModelDisplay.prototype.center_texture = function () {
     const img_w = this.texture.image.width;
     const img_h = this.texture.image.height;
     const geom_w = this.mesh.geometry.parameters.width;
     const geom_h = this.mesh.geometry.parameters.height;
+    const r_w = geom_w / img_w;
+    const r_h = geom_h / img_h;
+    const ratio = Math.min(r_w, r_h);
 
-    if (img_w > geom_w) {
-        const r = geom_w / img_w;
-        const scaled_w = r * img_w;
-        const scaled_h = r * img_h;
+    const scaled_w = ratio * img_w;
+    const scaled_h = ratio * img_h;
+    const reduce_factor_w = (geom_w - scaled_w) / geom_w;
+    const reduce_factor_h = (geom_h - scaled_h) / geom_h;
 
-        const reduce_factor_w = (geom_w - scaled_w) / geom_w;
-        const reduce_factor_h = (geom_h - scaled_h) / geom_h;
-
-        // scale the texture-image by adding reduce_factor as repeat_factor
-        this.texture.repeat.set(1 + reduce_factor_w, 1 + reduce_factor_h);
-    }
+    // scale the texture-image by adding reduce_factor as repeat_factor
+    this.texture.repeat.set(1 + reduce_factor_w, 1 + reduce_factor_h);
 
     // sets texture in the middle of the plane-display
     this.texture.center.set(0.5, 0.5);
@@ -197,7 +196,7 @@ PF_ModelDisplay.prototype.center_texture = function (url) {
     // anisotropy [1, 16], improves rendering of texture
     this.texture.anisotropy = 16;
 
-    // update
+    // update texture on the mesh
     this.mesh.material.map = this.texture;
     this.mesh.material.needsUpdate = true;
 }
