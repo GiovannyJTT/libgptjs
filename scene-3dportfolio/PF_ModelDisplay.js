@@ -166,7 +166,15 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
 }
 
 /**
- * - Centers the image in the middle of the display-plane by using the destination-ratio (plane)
+ * - Centers the image in the middle of the display-plane
+ * - Sets a `ratio of reference` depending on the orientation of the incoming image:
+ *      - Incoming image is horizontal: ratio of refence is `ratio_w = geom.w / img.w`,
+ *          because the `img.w` will fit exactly into the `geom.w`, and `img.h` will be scaled
+ *      - Incoming image is vertical: ratio of reference is `ratio_h = geom.h / img.h`
+ *          because the `img.h` will fit exaxtlu into the `geom.h`, and `img.w` will be scaled
+ * - It assumes the display-plane of the arcade-screen is vertical (Commonly: 54 x 67)
+ * - Incoming images can be horizontal (ex: 1280 x 720) or vertical (1400 x 2100), so the `reduce_factor_w`,
+ * or the `reduce_factor_h`, is calculated based on the `ratio of reference` and added to `texture.repeat(x,y)`
  * @param {String} url url path of the image to be loaded as texture
  */
 PF_ModelDisplay.prototype.center_texture = function () {
@@ -174,14 +182,26 @@ PF_ModelDisplay.prototype.center_texture = function () {
     const img_h = this.texture.image.height;
     const geom_w = this.mesh.geometry.parameters.width;
     const geom_h = this.mesh.geometry.parameters.height;
-    const r_w = geom_w / img_w;
-    const r_h = geom_h / img_h;
-    const ratio = Math.min(r_w, r_h);
 
-    const scaled_w = ratio * img_w;
-    const scaled_h = ratio * img_h;
-    const reduce_factor_w = (geom_w - scaled_w) / geom_w;
-    const reduce_factor_h = (geom_h - scaled_h) / geom_h;
+    let reduce_factor_w = undefined;
+    let reduce_factor_h = undefined;
+    
+    // img is horizontal
+    if (img_w > img_h) {
+        // reference ratio is ratio_w
+        const r_w = geom_w / img_w;
+        const scaled_h = r_w * img_h;
+        reduce_factor_h = (geom_h - scaled_h) / geom_h;
+        reduce_factor_w = 0;
+    }
+    // img is vertical
+    else {
+        // reference ratio is ratio_h
+        const r_h = geom_h / img_h;
+        const scaled_w = r_h * img_w;
+        reduce_factor_w = (geom_w - scaled_w) / geom_w;
+        reduce_factor_h = 0;
+    }
 
     // scale the texture-image by adding reduce_factor as repeat_factor
     this.texture.repeat.set(1 + reduce_factor_w, 1 + reduce_factor_h);
