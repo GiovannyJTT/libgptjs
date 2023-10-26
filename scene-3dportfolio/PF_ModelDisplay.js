@@ -171,9 +171,9 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
  *      - Incoming image is horizontal: ratio of refence is `ratio_w = geom.w / img.w`,
  *          because the `img.w` will fit exactly into the `geom.w`, and `img.h` will be scaled
  *      - Incoming image is vertical: ratio of reference is `ratio_h = geom.h / img.h`
- *          because the `img.h` will fit exaxtlu into the `geom.h`, and `img.w` will be scaled
+ *          because the `img.h` will fit exaxtly into the `geom.h`, and `img.w` will be scaled
  * - It assumes the display-plane of the arcade-screen is vertical (Commonly: 54 x 67)
- * - Incoming images can be horizontal (ex: 1280 x 720) or vertical (1400 x 2100), so the `reduce_factor_w`,
+ * - Incoming images can be horizontal (ex: 1280 x 720) or vertical (ex: 1400 x 2100), so the `reduce_factor_w`,
  * or the `reduce_factor_h`, is calculated based on the `ratio of reference` and added to `texture.repeat(x,y)`
  * @param {String} url url path of the image to be loaded as texture
  */
