@@ -213,6 +213,9 @@ PF_ModelDisplay.prototype.center_texture = function () {
     // ClampToEdgeWrapping will fill the empty space
     this.texture.wrapS = THREE.ClampToEdgeWrapping;
     this.texture.wrapT = THREE.ClampToEdgeWrapping;
+
+    // improve quality: most of cases images will be mignified to fit into the small arcade-display-plane
+    this.texture.magFilter = this.texture.minFilter = THREE.LinearMipmapNearestFilter;
     // anisotropy [1, 16], improves rendering of texture
     this.texture.anisotropy = 16;
 
