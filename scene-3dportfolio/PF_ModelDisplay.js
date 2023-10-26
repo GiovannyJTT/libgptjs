@@ -66,8 +66,7 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     const mat = new THREE.MeshBasicMaterial(
         {
             color: 0xffffff,
-            map: this.texture,
-            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
+            map: this.texture
         }
     );
 
