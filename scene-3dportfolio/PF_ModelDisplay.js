@@ -217,6 +217,7 @@ PF_ModelDisplay.prototype.center_texture = function () {
     this.texture.anisotropy = 16;
 
     // update texture on the mesh
+    this.mesh.material.map.dispose(); // remove previous from gpu
     this.mesh.material.map = this.texture;
     this.mesh.material.needsUpdate = true;
 }
