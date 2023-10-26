@@ -205,11 +205,11 @@ PF_ModelDisplay.prototype.center_texture = function () {
 
     // scale the texture-image by adding reduce_factor as repeat_factor
     this.texture.repeat.set(1 + reduce_factor_w, 1 + reduce_factor_h);
-
     // sets texture in the middle of the plane-display
     this.texture.center.set(0.5, 0.5);
     // no offset needed
     this.texture.offset.set(0, 0);
+    
     // ClampToEdgeWrapping will fill the empty space
     this.texture.wrapS = THREE.ClampToEdgeWrapping;
     this.texture.wrapT = THREE.ClampToEdgeWrapping;
