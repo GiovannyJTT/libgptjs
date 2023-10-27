@@ -228,7 +228,13 @@ PF_Scene.prototype.updateArcade = function (ms) {
         const wp_index = this.m_drone.get_wp_country_index();
         this.m_arcade.place_at_wp(wp_index);
         this.m_arcade.face_to(this.fc.cam.position);
-        this.m_arcade.m_display.show_picture(wp_index);
+
+        if (this.timer === undefined) {
+            this.timer = setTimeout(() => {
+                this.m_arcade.m_display.set_next_image_index(wp_index);
+                this.timer = undefined;
+            }, 8000);
+        }
     }
 }
 
