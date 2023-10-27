@@ -137,6 +137,8 @@ PF_ModelArcade.prototype.place_at_wp = function (wp_index) {
 
     const pos = this.pos_per_wp[wp_index];
     this.arcade_obj.position.set(pos.x, pos.y, pos.z);
+
+    this.m_display.show_picture(wp_index);
 }
 
 PF_ModelArcade.prototype.face_to = function (lookat_pos) {
