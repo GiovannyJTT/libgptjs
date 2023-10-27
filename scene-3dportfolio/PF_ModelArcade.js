@@ -103,12 +103,22 @@ PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
 }
 
 PF_ModelArcade.prototype.attach_light = function () {
-    const dist = this.size.y / 1.5;
-    // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
-    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 80, dist, 2);
-    lp.position.set(0, -2*dist, dist);
+    const dist_screen = this.size.y * 0.5;
+    // Point-Light close to the arcade-screen position. Point-Light: emits in all directions, 75% white light.
+    const lp_screen = new THREE.PointLight(new THREE.Color(0xbfbfbf), 80, dist_screen, 2);
+    // model-coords: (x, z, y)
+    lp_screen.position.set(0, -this.size.y * 0.4, this.size.y * 0.8);
     // fixed attachment
-    this.arcade_obj.add(lp);
+    this.arcade_obj.add(lp_screen);
+
+    // Point-Light close to the arcade-buttons position. Point-Light: emits in all directions, 75% white light.
+    const dist_buttons = this.size.y * 0.375;
+    const lp_buttons = new THREE.PointLight(new THREE.Color(0xbfbfbf), 100, dist_buttons, 2);
+    // model-coords: (x, z, y)
+    lp_buttons.position.set(-this.size.y * 0.25, -this.size.y * 1.25, -this.size.y * 0.625);
+    // fixed attachment
+    this.arcade_obj.add(lp_buttons);
+
 }
 
 PF_ModelArcade.prototype.attach_display = function () {
