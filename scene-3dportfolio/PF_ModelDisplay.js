@@ -216,7 +216,7 @@ PF_ModelDisplay.prototype.center_texture = function () {
     // improve quality: most of cases images will be mignified to fit into the small arcade-display-plane
     this.texture.magFilter = this.texture.minFilter = THREE.LinearMipmapLinearFilter;
     // anisotropy [1, 16], improves rendering of texture
-    this.texture.anisotropy = 16;
+    this.texture.anisotropy = 8;
 
     // update texture on the mesh
     this.mesh.material.map.dispose(); // remove previous from gpu
