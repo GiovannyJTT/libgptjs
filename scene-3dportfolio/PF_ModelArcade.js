@@ -105,7 +105,7 @@ PF_ModelArcade.prototype.calc_pos_per_wp_country = function () {
 PF_ModelArcade.prototype.attach_light = function () {
     const dist = this.size.y / 1.5;
     // Point-Light for UFO in the center. Point-Light: emits in all directions, 75% white light.
-    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 150, dist, 2);
+    const lp = new THREE.PointLight(new THREE.Color(0xbfbfbf), 80, dist, 2);
     lp.position.set(0, -2*dist, dist);
     // fixed attachment
     this.arcade_obj.add(lp);
