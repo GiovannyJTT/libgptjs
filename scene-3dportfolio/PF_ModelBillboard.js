@@ -144,7 +144,6 @@ PF_ModelBillboard.prototype.calc_pos_per_wp_country = function () {
         const end = new THREE.Vector3(wp_end.coords.x, 0, wp_end.coords.y);
         const start = new THREE.Vector3(wp_start.coords.x, 0, wp_start.coords.y);
         // displacement based on direction-vector to not overlap with drone
-
         const disp = new THREE.Vector3().copy(end)
             .sub(start).normalize().multiplyScalar(2.5 * this.size.z);
 
