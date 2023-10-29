@@ -127,18 +127,17 @@ PF_ModelArcade.prototype.attach_display = function () {
 }
 
 /**
- * - Places the ARCADE-object close to the wp-country
- * @param {Int} wp_index index of the waypoint-country where to place this object 
+ * - It places the ARCADE-object (and its children: display, lights, etc) close to the wp-country
+ * @param {Int} wp_index index of the waypoint-country where to place this ARCADE-object 
  */
 PF_ModelArcade.prototype.place_at_wp = function (wp_index) {
     if (undefined === this.arcade_obj){
         return;
     }
 
+    // set position of arcade and its children (display, lights)
     const pos = this.pos_per_wp[wp_index];
     this.arcade_obj.position.set(pos.x, pos.y, pos.z);
-
-    this.m_display.show_picture(wp_index);
 }
 
 PF_ModelArcade.prototype.face_to = function (lookat_pos) {
@@ -159,6 +158,49 @@ PF_ModelArcade.prototype.face_to = function (lookat_pos) {
 
     // fix rotation
     this.arcade_obj.rotateX(-Math.PI / 2);
+}
+
+/**
+ * - It switches the display `on` or `off` depending on the distance between `drone-position` and `ARCADE-display`
+ * - Only switches on when the display is currently off, and viceversa
+ * @param {THREE.Vector3} drone_pos current position of the drone
+ * @property {Number} PF_Common.ARCADE_THRESHOLD_DISTANCE_TO_SWITCH_ON_OFF Distance threshold to trigger
+ *  switch on / off the display (Commonly: 150)
+ */
+PF_ModelArcade.prototype.set_display_on_or_off = function (drone_pos) {
+    if (this.m_display === undefined) {
+        return;
+    }
+
+    const dist = new THREE.Vector3().copy(this.m_display.mesh.position).sub(drone_pos);
+    if (dist.length() < PF_Common.ARCADE_THRESHOLD_DISTANCE_TO_SWITCH_ON_OFF) {
+        if (!this.m_display.check_is_on()) {
+            this.m_display.switch_on();
+        }
+    }
+    else {
+        if (this.m_display.check_is_on()) {
+            this.m_display.switch_off();
+        }
+    }
+}
+
+/**
+ * 1. Sets the display on or of depending on the distance between the drone and the display
+ * 2. When the display is on: shows picture of that country
+ * @param {THREE.Vector3} drone_pos current position of the drone
+ * @param {Int} wp_index waypoint-country index to retrieve the images related to
+ */
+PF_ModelArcade.prototype.show_pictures_when_close_to_screen = function (drone_pos, wp_index) {
+    if (this.m_display === undefined) {
+        return;
+    }
+
+    this.set_display_on_or_off(drone_pos);
+
+    if (this.m_display.check_is_on()) {
+        this.m_display.show_picture(wp_index);
+    }
 }
 
 export default PF_ModelArcade
