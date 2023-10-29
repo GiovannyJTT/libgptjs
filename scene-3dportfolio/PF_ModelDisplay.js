@@ -110,6 +110,7 @@ PF_ModelDisplay.prototype.switch_on = function () {
     if (this.mesh.material.envMap !== undefined) {
         this.mesh.material.envMap.dispose();
     }
+    console.debug("PF_ModelDisplay: switched-ON");
 }
 
 /**
@@ -144,6 +145,7 @@ PF_ModelDisplay.prototype.switch_off = function () {
 
     // adds skybox
     this.mesh.material.envMap = PF_Common.SKYBOX_CUBE_TEXTURE;
+    console.debug("PF_ModelDisplay: switched-OFF");
 }
 
 /**
