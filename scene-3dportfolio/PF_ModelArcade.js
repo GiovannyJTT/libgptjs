@@ -172,7 +172,10 @@ PF_ModelArcade.prototype.set_display_on_or_off = function (target_pos) {
         return;
     }
 
-    const dist = new THREE.Vector3().copy(this.m_display.mesh.position).sub(target_pos);
+    const wcs_display_pos = new THREE.Vector3();
+    this.m_display.mesh.getWorldPosition(wcs_display_pos);
+    const dist = new THREE.Vector3().copy(wcs_display_pos).sub(target_pos);
+
     if (dist.length() < PF_Common.ARCADE_THRESHOLD_DISTANCE_TO_SWITCH_ON_OFF) {
         if (!this.m_display.check_is_on()) {
             this.m_display.switch_on();
