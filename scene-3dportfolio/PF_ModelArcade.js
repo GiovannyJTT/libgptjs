@@ -161,18 +161,18 @@ PF_ModelArcade.prototype.face_to = function (lookat_pos) {
 }
 
 /**
- * - It switches the display `on` or `off` depending on the distance between `drone-position` and `ARCADE-display`
+ * - It switches the display `on` or `off` depending on the distance between `target-position` and `ARCADE-display`
  * - Only switches on when the display is currently off, and viceversa
- * @param {THREE.Vector3} drone_pos current position of the drone
+ * @param {THREE.Vector3} target_pos current position of the target-object (drone or follow-camera)
  * @property {Number} PF_Common.ARCADE_THRESHOLD_DISTANCE_TO_SWITCH_ON_OFF Distance threshold to trigger
  *  switch on / off the display (Commonly: 150)
  */
-PF_ModelArcade.prototype.set_display_on_or_off = function (drone_pos) {
+PF_ModelArcade.prototype.set_display_on_or_off = function (target_pos) {
     if (this.m_display === undefined) {
         return;
     }
 
-    const dist = new THREE.Vector3().copy(this.m_display.mesh.position).sub(drone_pos);
+    const dist = new THREE.Vector3().copy(this.m_display.mesh.position).sub(target_pos);
     if (dist.length() < PF_Common.ARCADE_THRESHOLD_DISTANCE_TO_SWITCH_ON_OFF) {
         if (!this.m_display.check_is_on()) {
             this.m_display.switch_on();
@@ -186,17 +186,17 @@ PF_ModelArcade.prototype.set_display_on_or_off = function (drone_pos) {
 }
 
 /**
- * 1. Sets the display on or of depending on the distance between the drone and the display
+ * 1. Sets the display on or of depending on the distance between the follow-camera and the arcade-display
  * 2. When the display is on: shows picture of that country
- * @param {THREE.Vector3} drone_pos current position of the drone
+ * @param {THREE.Vector3} target_pos_ current position of the target object to measure the distance in between (target - display)
  * @param {Int} wp_index waypoint-country index to retrieve the images related to
  */
-PF_ModelArcade.prototype.show_pictures_when_close_to_screen = function (drone_pos, wp_index) {
+PF_ModelArcade.prototype.show_pictures_when_close_to_screen = function (target_pos_, wp_index) {
     if (this.m_display === undefined) {
         return;
     }
 
-    this.set_display_on_or_off(drone_pos);
+    this.set_display_on_or_off(target_pos_);
 
     if (this.m_display.check_is_on()) {
         this.m_display.show_picture(wp_index);

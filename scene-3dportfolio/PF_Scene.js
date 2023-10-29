@@ -228,7 +228,7 @@ PF_Scene.prototype.updateArcade = function (ms) {
         const wp_index = this.m_drone.get_wp_country_index();
         this.m_arcade.place_at_wp(wp_index);
         this.m_arcade.face_to(this.fc.cam.position);
-        this.m_arcade.show_pictures_when_close_to_screen(this.m_drone.drone_obj.position, wp_index);
+        this.m_arcade.show_pictures_when_close_to_screen(this.fc.cam.position, wp_index);
 
         if (this.timer === undefined) {
             this.timer = setTimeout(() => {
