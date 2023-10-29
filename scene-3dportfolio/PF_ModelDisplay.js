@@ -28,6 +28,7 @@ class PF_ModelDisplay {
         this.mesh = this.get_display_mesh(width, height, inclination_rads, displacement);
 
         // init
+        this.is_on = false;
         this.last_img_url = undefined;
         this.loading_texture = false;
     }
@@ -36,14 +37,19 @@ class PF_ModelDisplay {
 /**
  * - Creates a mesh (PlaneGeometry + MeshBasicMaterial)
  * - MeshBasicMaterial is not affected by light, so pictures will be displayed with good quality
- * - The material contains the initial texture, and it will be replaced on update
- * - SkyBoxcube is applied as Environment map to simulate reflective arcade-screen
- * - Sets disabled: receive / cast shadows
- * @param {Number} width 
- * @param {Number} height 
- * @param {Float} inclination_rads 
- * @param {Number} displacement 
- * @returns {THREE.Mesh}
+ * - The material contains the initial texture, and it will be replaced on `render.update()`
+ * - The display has a flag `is_on` which will allow to show the default texture
+ *  (glossy / reflective) when `is off` or the picture when `is on`
+ * - SkyBoxcube is applied as `envMap` (environment map) to simulate reflections
+ * - Sets disabled: `receive / cast shadows`
+ * 
+ * @param {Number} width width of the display plane in meters (Commonly: 54)
+ * @param {Number} height height of the display plane in meters (Commonly: 67)
+ * @param {Float} inclination_rads Inclination of the display plane on the X-axis in other to face the
+ *  camera properly (Commonly: 74.5 degrees)
+ * @param {Number} displacement displacement in meters from the center of the arcade-machine model3D in order to 
+ *  place the display-plane over the arcade-screen (Commonly: 8)
+ * @returns {THREE.Mesh} PlaneGeometry + MeshBasicMaterial + texture
  */
 PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclination_rads, displacement) {
     // geometry
@@ -60,13 +66,15 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     this.texture.wrapS = THREE.ClampToEdgeWrapping;
     this.texture.wrapT = THREE.ClampToEdgeWrapping;
     // anisotropy [1, 16], improves rendering of texture
-    this.texture.anisotropy = 16;
+    this.texture.anisotropy = PF_Common.RENDERER_MAX_ANISOTROPY;
 
     // attach texture to material. NOTE: MeshBasicMaterial is not affected by light
     const mat = new THREE.MeshBasicMaterial(
         {
             color: 0xffffff,
-            map: this.texture
+            map: this.texture,
+            // default display-status is `off` then show reflective skycube
+            envMap: PF_Common.SKYBOX_CUBE_TEXTURE
         }
     );
 
@@ -85,6 +93,64 @@ PF_ModelDisplay.prototype.get_display_mesh = function (width, height, inclinatio
     return mesh;
 }
 
+/**
+ * @returns {Bool} true when flag `is_on` is true, false otherwise
+ */
+PF_ModelDisplay.prototype.check_is_on = function () {
+    return this.is_on;
+}
+
+/**
+ * - Sets flag `is_on = true`
+ * - Removes skybox if exists
+ */
+PF_ModelDisplay.prototype.switch_on = function () {
+    this.is_on = true;
+    // remove skybox reflections
+    if (this.mesh.material.envMap !== undefined) {
+        this.mesh.material.envMap.dispose();
+    }
+}
+
+/**
+ * - Sets flag `is_on = false`
+ * - Removes last texture if exists
+ * - Sets template texture to be shown
+ * - Adds skybox to be shown
+ */
+PF_ModelDisplay.prototype.switch_off = function () {
+    this.is_on = false;
+
+    // remove last texture
+    if (this.mesh.material.map !== undefined) {
+        this.mesh.material.map.dispose();
+    }
+
+    // sets template texture
+    // texture: asssuming locally-hosted, load will not fail
+    this.texture = new THREE.TextureLoader().load(PF_Common.URL_DISPLAY_TEMPLATE_TEXTURE);
+    // sets texture in the middle of the plane-display
+    this.texture.center.set(0.5, 0.5);
+    // no offset needed
+    this.texture.offset.set(0, 0);
+    // ClampToEdgeWrapping will fill the empty space
+    this.texture.wrapS = THREE.ClampToEdgeWrapping;
+    this.texture.wrapT = THREE.ClampToEdgeWrapping;
+    // anisotropy [1, 16], improves rendering of texture
+    this.texture.anisotropy = PF_Common.RENDERER_MAX_ANISOTROPY;
+    
+    // set skybox reflections
+    this.mesh.material.map = this.texture;
+
+    // adds skybox
+    this.mesh.material.envMap = PF_Common.SKYBOX_CUBE_TEXTURE;
+}
+
+/**
+ * Based on the `wp_index` (waypoint-country index) received, it `increases` its current `pic_index` to show that specific picture
+ * @param {Int} wp_index waypoint-country index to retrieve the set of pictures
+ * @property {Dictionary} pictures Example: {paths: [], pic_index: 0}
+ */
 PF_ModelDisplay.prototype.set_next_image_index = function (wp_index) {
     const ps = PF_Common.FPATH_WPS[wp_index].pictures;
     if (ps.pic_index < ps.paths.length-1) {
@@ -93,7 +159,7 @@ PF_ModelDisplay.prototype.set_next_image_index = function (wp_index) {
 }
 
 /**
- * Based on the `wp_index` (waypoint-country index) received, it reduces its current `pic_index` to show that specific picture
+ * Based on the `wp_index` (waypoint-country index) received, it `reduces` its current `pic_index` to show that specific picture
  * @param {Int} wp_index waypoint-country index to retrieve the set of pictures
  * @property {Dictionary} pictures Example: {paths: [], pic_index: 0}
  */
@@ -105,9 +171,8 @@ PF_ModelDisplay.prototype.set_prev_image_index = function (wp_index) {
 }
 
 /**
- * Based on the `wp_index` (waypoint-country index) received, it increases its current `pic_index` to show that specific picture
- * @param {Int} wp_index waypoint-country index to retrieve the set of pictures
- * @property {Dictionary} pictures Example: {paths: [], pic_index: 0}
+ * @param {Int} wp_index waypoint-country index to retrieve the curren picture
+ * @returns {String} url path of the current piture (`pic_index`) to be shown at the waypoint-country (`wp_index`)
  */
 PF_ModelDisplay.prototype.get_current_image_url = function (wp_index) {
     const ps = PF_Common.FPATH_WPS[wp_index].pictures;
@@ -116,10 +181,10 @@ PF_ModelDisplay.prototype.get_current_image_url = function (wp_index) {
 }
 
 /**
- * 1. Checks the last picture-URL loaded for the `wp_index`
- * 2. If picture-URL has changed (the user has swiped-right / or left to see other picture), then
- *  it loads a new pictures as texture
- * 3. Only loads a new texture when there is no loading-process ongoing
+ * 1. Checks the last picture-URL (string) loaded for the `wp_index`
+ * 2. If picture-URL has changed (the user has swiped-right / or swiped-left to see other picture), then
+ *      it loads a new picture as texture
+ * - NOTE: Only loads a new texture when there is no loading-process ongoing
  * @param {Int} wp_index waypoint-country index to retrieve the set of pictures
  * @property {Bool} this.loading_texture true if there is a loading-process ongoing, false otherwise
  */
@@ -136,7 +201,8 @@ PF_ModelDisplay.prototype.show_picture = function (wp_index) {
 
 /**
  * 1. Sets flag `this.loading_texture` to true in order to avoid several loads in parallel
- * 2. Triggers load of texture and attaches a `on_loaded_sequence` (center_texture) method to be executed when texture-loaded finishes
+ * 2. Triggers load of texture and attaches a `on_loaded_sequence` callback (center_texture) method to be
+ *      executed when the texture finishes loading
  * 3. Resets flags: `this.loading_texture = false`, `this.last_img_url = url`
  * @param {String} url url path of the image to be loaded as texture
  */
@@ -165,6 +231,7 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
 }
 
 /**
+ * - It assumes `this.texture` is already set
  * - Centers the image in the middle of the display-plane
  * - Sets a `ratio of reference` depending on the orientation of the incoming image:
  *      - Incoming image is horizontal: ratio of refence is `ratio_w = geom.w / img.w`,
@@ -174,7 +241,8 @@ PF_ModelDisplay.prototype.update_texture = function (url) {
  * - It assumes the display-plane of the arcade-screen is vertical (Commonly: 54 x 67)
  * - Incoming images can be horizontal (ex: 1280 x 720) or vertical (ex: 1400 x 2100), so the `reduce_factor_w`,
  * or the `reduce_factor_h`, is calculated based on the `ratio of reference` and added to `texture.repeat(x,y)`
- * @param {String} url url path of the image to be loaded as texture
+ * - NOTE: The display switches on / off depending how close is the drone to the display, when is off
+ *  the skybox-texture is applied for reflections, so it needs to be removed when showing a picture (done at `show_picture`)
  */
 PF_ModelDisplay.prototype.center_texture = function () {
     const img_w = this.texture.image.width;
