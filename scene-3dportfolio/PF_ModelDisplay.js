@@ -190,11 +190,15 @@ PF_ModelDisplay.prototype.get_current_image_url = function (wp_index) {
  */
 PF_ModelDisplay.prototype.show_picture = function (wp_index) {
     const url = this.get_current_image_url(wp_index);
+
+    // already loaded
     if (this.last_img_url === url) {
         return;
     }
 
+    // no loading-process ongoing
     if (!this.loading_texture) {
+        // new texture to beloaded
         this.update_texture(url);
     }
 }
