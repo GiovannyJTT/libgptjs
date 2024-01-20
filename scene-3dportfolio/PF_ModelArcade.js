@@ -191,7 +191,7 @@ PF_ModelArcade.prototype.set_display_on_or_off = function (target_pos) {
 /**
  * 1. Sets the display on or of depending on the distance between the follow-camera and the arcade-display
  * 2. When the display is on: shows picture of that country
- * @param {THREE.Vector3} target_pos_ current position of the target object to measure the distance in between (target - display)
+ * @param {THREE.Vector3} target_pos_ current position of the target object to measure the distance in between (target to arcade-screen)
  * @param {Int} wp_index waypoint-country index to retrieve the images related to
  */
 PF_ModelArcade.prototype.show_pictures_when_close_to_screen = function (target_pos_, wp_index) {
