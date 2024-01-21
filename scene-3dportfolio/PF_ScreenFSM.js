@@ -155,15 +155,16 @@ PF_ScreenFSM.prototype.transit = function (event_) {
 }
 
 /**
- * 1. Updates `prev_state` every-frame before handling combination `(incoming-event, current-state)`,
+ * 1. Updates `prev_state` every frame before handling combination `(incoming-event, current-state)`,
  * so `prev_state` will be equal to `state` most of frames except when it changes
- * 2. Performs actions that need to be repeated every-frame depending on current state
+ * 2. Performs actions that need to be repeated every-frame depending on current state (PER-FRAME actions)
+ * 3. Handles the combination `(incoming-event, current-state)`
  */
 PF_ScreenFSM.prototype.update_state = function () {
     // 1. update prev_state
     this.prev_state = this.state;
 
-    // 2. handle EVERY-FRAME actions
+    // 2. handle PER-FRAME actions
     switch (this.state) {
         case PF_ScreenState.SHOWING:
             break;
@@ -175,7 +176,14 @@ PF_ScreenFSM.prototype.update_state = function () {
             break;
         case PF_ScreenState.LOADED:
             break;
-    }    
+    }
+
+    // 3. handle (incoming-event, current-state)
+    if (undefined !== this.pending_event) {
+        this.transit(this.pending_event);
+        // consume event
+        this.pending_event = undefined;
+    }
 }
 
 PF_ScreenFSM.prototype.prev_is_showing = function () {
@@ -196,6 +204,26 @@ PF_ScreenFSM.prototype.prev_is_loading = function () {
 
 PF_ScreenFSM.prototype.prev_is_loaded = function () {
     return this.prev_state == PF_ScreenState.LOADED;
+}
+
+PF_ScreenFSM.prototype.curr_is_showing = function () {
+    return this.state == PF_ScreenState.SHOWING;
+}
+
+PF_ScreenFSM.prototype.curr_is_disposing = function () {
+    return this.state == PF_ScreenState.DISPOSING;
+}
+
+PF_ScreenFSM.prototype.curr_is_disposed = function () {
+    return this.state == PF_ScreenState.DISPOSED;
+}
+
+PF_ScreenFSM.prototype.curr_is_loading = function () {
+    return this.state == PF_ScreenState.LOADING;
+}
+
+PF_ScreenFSM.prototype.curr_is_loaded = function () {
+    return this.state == PF_ScreenState.LOADED;
 }
 
 export default PF_ScreenFSM
