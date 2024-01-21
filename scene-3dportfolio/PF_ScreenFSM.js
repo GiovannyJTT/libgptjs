@@ -14,17 +14,13 @@
 const PF_ScreenState = Object.freeze(
     {
         // a texture was loaded onto the panel and is being shown
-        SHOWING_IMAGE: Symbol("showing_image"),
-
+        SHOWING: Symbol("showing_image"),
         // unloading the previous texture from the panel
-        DISPOSING_PREV: Symbol("disposing_prev"),
-
-        DISPOSED_PREV: Symbol("disposed_prev"),
-
+        DISPOSING: Symbol("disposing_prev"),
+        DISPOSED: Symbol("disposed_prev"),
         // loading the new texture onto the panel
-        LOADING_NEW: Symbol("loading_new"),
-
-        LOADED_NEW: Symbol("loaded_new")
+        LOADING: Symbol("loading_new"),
+        LOADED: Symbol("loaded_new")
     }
 );
 
@@ -33,45 +29,53 @@ const PF_ScreenState = Object.freeze(
  */
 const PF_ScreenEvent = Object.freeze(
     {
-        // a change of image has started
+        // start removing previously loaded texture
         DISPOSE_START: Symbol("dispose_start"),
-        // previous texture is fully removed from panel
+        // previous texture is fully removed from the screen-panel
         DISPOSE_END: Symbol("dispose_end"),
-        // a new texture has started loading
+        // start loading a new texture onto the screen-panel
         LOAD_START: Symbol("load_start"),
-        // new texture is fully loaded onto the panel
+        // new texture is fully loaded onto the screen-panel
         LOAD_END: Symbol("load_end"),
-        // 1
-        SHOW: Symbol("SHOW")
+        // start showing it onto the screen-panel
+        SHOW: Symbol("show"),
     }
 );
 
 const PF_ScreenTransitions = {
     // symbol as key-of-dictionary needs []
-    [PF_ScreenState.SHOWING_IMAGE]: {
-        [PF_ScreenEvent.DISPOSE_START]: PF_ScreenState.DISPOSING_PREV
+
+    [PF_ScreenState.SHOWING]: {
+        [PF_ScreenEvent.DISPOSE_START]: PF_ScreenState.DISPOSING
     },
 
-    [PF_ScreenState.DISPOSING_PREV]: {
-        [PF_ScreenEvent.DISPOSED_PREV]: PF_ScreenState.DISPOSED_PREV
+    [PF_ScreenState.DISPOSING]: {
+        [PF_ScreenEvent.DISPOSE_END]: PF_ScreenState.DISPOSED
     },
 
-    [PF_ScreenState.DISPOSED_PREV]: {
-        [PF_ScreenEvent.LOAD_START]: PF_ScreenState.LOADING_NEW
+    [PF_ScreenState.DISPOSED]: {
+        [PF_ScreenEvent.LOAD_START]: PF_ScreenState.LOADING
     },
 
-    [PF_ScreenEvent.LOADING_NEW]: {
-        [PF_ScreenEvent.LOAD_END]: PF_ScreenState.LOADED_NEW
+    [PF_ScreenState.LOADING]: {
+        [PF_ScreenEvent.LOAD_END]: PF_ScreenState.LOADED
     },
 
-    [PF_ScreenState.LOADED_NEW]: {
-        [PF_ScreenEvent.SHOW]: PF_ScreenState.SHOWING_IMAGE
+    [PF_ScreenState.LOADED]: {
+        [PF_ScreenEvent.SHOW]: PF_ScreenState.SHOWING
     }
 }
 
 class PF_ScreenFSM {
-    constructor () {
-        this.state = PF_ScreenState.SHOWING_IMAGE;
+    constructor (cbs_) {
+        this.cbs = cbs_
+        if (undefined === this.cbs) {
+            console.error("PF_ScreenFSM: external callbacks undefined");
+            return;
+        }
+
+        // init
+        this.state = PF_ScreenState.SHOWING;
         this.prev_state = undefined;
     }
 }
@@ -119,13 +123,30 @@ PF_ScreenFSM.prototype.transit = function (event_) {
 
         // ONLY ONCE ACTIONS
         switch (this.state) {
-            case PF_ScreenState.SHOWING_IMAGE:
+            case PF_ScreenState.SHOWING:
+                if (this.prev_is_loaded()) {
+                    this.cbs.on_loaded_to_showing();
+                }
                 break;
-            case PF_ScreenState.DISPOSED_PREV:
+            case PF_ScreenState.DISPOSING:
+                if (this.prev_is_showing()) {
+                    this.cbs.on_showing_to_disposing();
+                }
                 break;
-            case PF_ScreenState.LOADING_NEW:
+            case PF_ScreenState.DISPOSED:
+                if (this.prev_is_disposing()) {
+                    this.cbs.on_disposing_to_disposed();
+                }
                 break;
-            case PF_ScreenState.LOADED_NEW:
+            case PF_ScreenState.LOADING:
+                if (this.prev_is_disposed()) {
+                    this.cbs.on_disposed_to_loading();
+                }
+                break;
+            case PF_ScreenState.LOADED:
+                if (this.prev_is_loading()) {
+                    this.cbs.on_loading_to_loaded();
+                }
                 break;
         }
 
@@ -144,13 +165,37 @@ PF_ScreenFSM.prototype.update_state = function () {
 
     // 2. handle EVERY-FRAME actions
     switch (this.state) {
-        case PF_ScreenState.SHOWING_IMAGE:
+        case PF_ScreenState.SHOWING:
             break;
-        case PF_ScreenState.DISPOSED_PREV:
+        case PF_ScreenState.DISPOSING:
             break;
-        case PF_ScreenState.LOADING_NEW:
+        case PF_ScreenState.DISPOSED:
             break;
-        case PF_ScreenState.LOADED_NEW:
+        case PF_ScreenState.LOADING:
+            break;
+        case PF_ScreenState.LOADED:
             break;
     }    
 }
+
+PF_ScreenFSM.prototype.prev_is_showing = function () {
+    return this.prev_state == PF_ScreenState.SHOWING;
+}
+
+PF_ScreenFSM.prototype.prev_is_disposing = function () {
+    return this.prev_state == PF_ScreenState.DISPOSING;
+}
+
+PF_ScreenFSM.prototype.prev_is_disposed = function () {
+    return this.prev_state == PF_ScreenState.DISPOSED;
+}
+
+PF_ScreenFSM.prototype.prev_is_loading = function () {
+    return this.prev_state == PF_ScreenState.LOADING;
+}
+
+PF_ScreenFSM.prototype.prev_is_loaded = function () {
+    return this.prev_state == PF_ScreenState.LOADED;
+}
+
+export default PF_ScreenFSM
